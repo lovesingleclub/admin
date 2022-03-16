@@ -137,7 +137,7 @@ if($_REQUEST["st"] == "upload"){
             var $imgs = $(this).closest("span").find("#cimg").val();
 
             $this.fileupload({
-                    url: "ad_fun_action_list2_pic_add.php?st=upload&id=<?php echo $SqlFilter($_REQUEST["id"],"int"); ?>&t=<?php echo $SqlFilter($_REQUEST["t"],"tab"); ?>",
+                    url: "ad_fun_action_list2_pic_add.php?st=upload&id=<?php echo SqlFilter($_REQUEST["id"],"int"); ?>&t=<?php echo SqlFilter($_REQUEST["t"],"tab"); ?>",
                     type: "POST",
                     dropZone: $this,
                     dataType: 'html',

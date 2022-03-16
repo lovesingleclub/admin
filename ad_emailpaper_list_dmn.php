@@ -1,8 +1,35 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：ad_emailpaper_list_dmn.php
+    //後台對應位置：管理系統/DMN-電子報訂閱
+    //改版日期：2022.3.15
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar.php");
+
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+    if($_SESSION["MM_UserAuthorization"] != "admin"){
+        if($_SESSION["funtourpm"] != "1"){
+            call_alert("您沒有查看此頁的權限。","login.php",0);
+        }        
+    }
+
+    // 刪除
+    if($_REQUEST["st"] == "del"){
+        $SQL = "delete from emailpaper_dmn where auton=".SqlFilter($_REQUEST["an"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        reURL("win_close.php?m=刪除中");
+    }
+
 ?>
 
 <!-- MIDDLE -->
@@ -35,42 +62,54 @@ require_once("./include/_sidebar.php");
                         <th>信箱</th>
                         <th width=200>管理</th>
                     </tr>
-                    <tr>
-                        <td>2021/5/4 下午 05:14:25</td>
-                        <td></td>
-                        <td>sample@email.tst</td>
-                        <td><a href="javascript:Mars_popup2('?st=del&an=806','','width=300,height=200,top=100,left=100');">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td>2021/5/3 下午 08:22:49</td>
-                        <td></td>
-                        <td>aaa0906866787@gmail.com</td>
-                        <td><a href="javascript:Mars_popup2('?st=del&an=805','','width=300,height=200,top=100,left=100');">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td>2021/4/13 上午 10:59:14</td>
-                        <td></td>
-                        <td>qq987741@gmail.com</td>
-                        <td><a href="javascript:Mars_popup2('?st=del&an=804','','width=300,height=200,top=100,left=100');">刪除</a></td>
-                    </tr>
+                    <?php 
+                        $tsql = "";
+                        if($_REQUEST["s"] == "1"){
+                            $tsql = " where esex='女'";
+                        }
+                        if($_REQUEST["s"] == "0"){
+                            $tsql = " where esex='男'";
+                        }
+                        if($_REQUEST["s"] == "2"){
+                            $tsql = " where esex='' or esex is null";
+                        }
+
+                        // 計算總數
+                        $SQL = "select count(auton) as total_size from emailpaper_dmn".$tsql."";
+                        $rs = $SPConn->prepare($SQL);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                           $total_size = $result["total_size"];
+                        }else{
+                            $total_size = 0;
+                        }
+                        $tPage = 1; //目前頁數
+                        $tPageSize = 50; //每頁幾筆
+                        if ( $_REQUEST["tPage"] > 1 ){ $tPage = $_REQUEST["tPage"];}
+                        $tPageTotal = ceil(($total_size/$tPageSize)); //總頁數
+                        if ( $tPageSize*$tPage < $total_size ){
+                            $page2 = 50;
+                        }else{
+                            $page2 = (50-(($tPageSize*$tPage)-$total_size));
+                        }
+
+                        // SQL
+                        $SQL = "select * FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM emailpaper_dmn".$tsql." order by times desc ) t1 order by times ) t2 order by times desc";
+                        $rs = $SPConn->prepare($SQL);
+                        $rs->execute();
+                        $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                        if($result){
+                            foreach($result as $re){
+                                echo "<tr><td>".changeDate($re["times"])."</td><td>".$re["esex"]."</td><td>".$re["email"]."</td><td><a href=\"javascript:Mars_popup2('?st=del&an=".$re["auton"]."','','width=300,height=200,top=100,left=100');\">刪除</a></td></tr>";
+                            }
+                        }
+                    ?>
                 </table>
 
             </div>
-            <div class="text-center">共 130 筆、第 1 頁／共 3 頁&nbsp;&nbsp;
-                <ul class='pagination pagination-md'>
-                    <li><a href=/ad_emailpaper_list_dmn.php?topage=1>第一頁</a></li>
-                    <li class='active'><a href="#">1</a></li>
-                    <li><a href=/ad_emailpaper_list_dmn.php?topage=2 class='text'>2</a></li>
-                    <li><a href=/ad_emailpaper_list_dmn.php?topage=3 class='text'>3</a></li>
-                    <li><a href=/ad_emailpaper_list_dmn.php?topage=2 class='text' title='Next'>下一頁</a></li>
-                    <li><a href=/ad_emailpaper_list_dmn.php?topage=3 class='text'>最後一頁</a></li>
-                    <li><select style="width:60px;height:34px;margin-left:5px;" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
-                            <option value="/ad_emailpaper_list_dmn.php?topage=1" selected>1</option>
-                            <option value="/ad_emailpaper_list_dmn.php?topage=2">2</option>
-                            <option value="/ad_emailpaper_list_dmn.php?topage=3">3</option>
-                        </select></li>
-                </ul>
-            </div>
+            <!-- 頁碼 -->
+            <?php require_once("./include/_page.php"); ?>
 
         </div>
         <!--/span-->

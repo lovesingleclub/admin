@@ -1,8 +1,18 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：ad_cheers_check.php
+    //後台對應位置：管理系統/Cheers 檢校
+    //改版日期：2022.3.16
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar.php");
+
+
 ?>
 
 <!-- MIDDLE -->
