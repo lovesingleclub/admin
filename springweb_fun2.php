@@ -1,8 +1,72 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：springweb_fun2.php
+    //後台對應位置：春天網站系統/媒體報導
+    //改版日期：2022.4.4
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar_spring.php");
+    
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+
+    if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["funtourpm"] != "1"){
+        call_alert("您沒有查看此頁的權限。", "login.php", 0);
+    }
+
+    // 上移
+    if($_REQUEST["st"] == "up_line"){
+        $nowline = round(SqlFilter($_REQUEST["ad"],"int"));
+        $upline = $nowline+1;
+        $SQL = "update tv_data set t_desc=".$nowline." where t_desc='".$upline."'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update tv_data set t_desc=".$upline." where t_auto=".SqlFilter($_REQUEST["t_auto"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+    }
+
+    // 下移
+    if($_REQUEST["st"] == "down_line"){
+        $nowline = round(SqlFilter($_REQUEST["ad"],"int"));
+        $upline = $nowline-1;
+        $SQL = "update tv_data set t_desc=".$nowline." where t_desc=".$upline."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update tv_data set t_desc=".$upline." where t_auto=".SqlFilter($_REQUEST["t_auto"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+    }
+
+    if($_REQUEST["st"] == "sa"){
+        $SQL = "update tv_data set index_show=".SqlFilter($_REQUEST["v"],"tab")." where t_auto=".SqlFilter($_REQUEST["t"],"tab")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+    }
+
+    // 刪除(有刪除圖檔功能待測)
+    if($_REQUEST["st"] == "del"){
+        $SQL = "select t_pic from tv_data where t_auto=".SqlFilter($_REQUEST["id"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            DelFile("upload_image/".$result["t_pic"]); // 刪除圖檔待測
+        }
+
+        $SQL = "delete from tv_data where t_auto=".SqlFilter($_REQUEST["id"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        reURL("win_close.php?m=刪除中.....");
+    }
+
 ?>
 
 <!-- MIDDLE -->
@@ -39,98 +103,56 @@ require_once("./include/_sidebar.php");
                             <th width="30">精選</th>
                             <th>操作</th>
                         </tr>
-
-                        <tr>
-                            <td><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=60&t_auto=67"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2019/5/22</td>
-                            <td>獨立新女性熱衷實名制交友</td>
-                            <td>
-
-                                <a href="/upload_image/2019523133512_springweb_fun2_818.jpg" class='fancybox'>點我查看</a>
-
-                            </td>
-                            <td><input data-no-uniform="true" type="checkbox" id="67" class="show_check" checked></td>
-                            <td>
-                                <a href="springweb_fun2_add.php?act=up&id=67">編輯</a>
-                                <a href="javascript:Mars_popup2('springweb_fun2.php?st=del&id=67','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=up_line&ad=58&t_auto=65"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=58&t_auto=65"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2019/2/12</td>
-                            <td>主動出擊獲取真愛</td>
-                            <td>
-
-                                <a href="/upload_image/201921313284_springweb_fun2_850.jpg" class='fancybox'>點我查看</a>
-
-                            </td>
-                            <td><input data-no-uniform="true" type="checkbox" id="65" class="show_check" checked></td>
-                            <td>
-                                <a href="springweb_fun2_add.php?act=up&id=65">編輯</a>
-                                <a href="javascript:Mars_popup2('springweb_fun2.php?st=del&id=65','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=up_line&ad=55&t_auto=62"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=55&t_auto=62"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2018/11/29</td>
-                            <td>單身男女通往愛情的專屬導師</td>
-                            <td>
-                                <a href="http://www.youtube.com/watch?v=q2Fmjttkwio" target="_blank">點我查看(外部連結)</a>
-
-                            </td>
-                            <td><input data-no-uniform="true" type="checkbox" id="62" class="show_check" checked></td>
-                            <td>
-                                <a href="springweb_fun2_add.php?act=up&id=62">編輯</a>
-                                <a href="javascript:Mars_popup2('springweb_fun2.php?st=del&id=62','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=up_line&ad=54&t_auto=61"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=54&t_auto=61"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2018/8/28</td>
-                            <td>《一開口撩人又聊心》</td>
-                            <td>
-                                <a href="http://www.youtube.com/watch?v=XlTkby09HSs" target="_blank">點我查看(外部連結)</a>
-
-                            </td>
-                            <td><input data-no-uniform="true" type="checkbox" id="61" class="show_check" checked></td>
-                            <td>
-                                <a href="springweb_fun2_add.php?act=up&id=61">編輯</a>
-                                <a href="javascript:Mars_popup2('springweb_fun2.php?st=del&id=61','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=up_line&ad=53&t_auto=59"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=53&t_auto=59"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2017/7/24</td>
-                            <td>正聲電臺#宛志蘋台北在飛躍_獻給單身的您終結單身的追愛22堂課</td>
-                            <td>
-                                <a href="http://www.youtube.com/watch?v=FmbDBtT3XDo" target="_blank">點我查看(外部連結)</a>
-
-                            </td>
-                            <td><input data-no-uniform="true" type="checkbox" id="59" class="show_check"></td>
-                            <td>
-                                <a href="springweb_fun2_add.php?act=up&id=59">編輯</a>
-                                <a href="javascript:Mars_popup2('springweb_fun2.php?st=del&id=59','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=up_line&ad=52&t_auto=58"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=52&t_auto=58"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2017/7/2</td>
-                            <td>漢聲電臺#黃瑩的快樂向前行節目_獻給還是單身的您，終結單身的追愛22堂課</td>
-                            <td>
-                                <a href="http://www.youtube.com/watch?v=EvZND5gbkKU" target="_blank">點我查看(外部連結)</a>
-
-                            </td>
-                            <td><input data-no-uniform="true" type="checkbox" id="58" class="show_check"></td>
-                            <td>
-                                <a href="springweb_fun2_add.php?act=up&id=58">編輯</a>
-                                <a href="javascript:Mars_popup2('springweb_fun2.php?st=del&id=58','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
+                        <?php 
+                            $SQL = "SELECT * FROM tv_data order by t_desc desc";
+                            $rs = $SPConn->prepare($SQL);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){
+                                $ii = 0;
+                                foreach($result as $re){
+                                    if($ii == 0){
+                                        $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                    }else{
+                                        $uahref = "?st=up_line&ad=".$re["t_desc"]."&t_auto=".$re["t_auto"];
+                                    }                                   
+                                    if($ii == count($result)-1){
+                                        $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                    }else{
+                                        $dahref = "?st=down_line&ad=".$re["t_desc"]."&t_auto=".$re["t_auto"];
+                                    } ?>
+                                    <tr>
+                                        <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a</td>
+                                        <td><?php echo Date_EN($re["t_showtime"],1) ?></td>
+                                        <td><?php echo $re["t_title"] ?></td>
+                                        <td>
+                                            <?php 
+                                                if($re["t_url"] != ""){ ?>
+                                                    <a href="http://www.youtube.com/watch?v=<?php echo $re["t_url"]; ?>" target="_blank">點我查看(外部連結)</a>
+                                                <?php }elseif($re["t_pic"] != ""){ ?>
+                                                    <a href="/upload_image/<?php echo $re["t_pic"]; ?>" class='fancybox'>點我查看</a>
+                                                <?php }
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php 
+                                                if($re["index_show"] == 1){
+                                                    echo "<input data-no-uniform='true' type='checkbox' id='".$re["t_auto"]."' class='show_check' checked>";
+                                                }else{
+                                                    echo "<input data-no-uniform='true' type='checkbox' id='".$re["t_auto"]."' class='show_check'>";
+                                                }
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <a href="springweb_fun2_add.php?act=up&id=<?php echo $re["t_auto"]; ?>">編輯</a>					
+                                            <a href="javascript:Mars_popup2('springweb_fun2.php?st=del&id=<?php echo $re["t_auto"]; ?>','','width=300,height=200,top=100,left=100')">刪除</a>						
+                                        </td>
+                                    </tr>
+                                <?php $ii = $ii+1; }
+                            }else{
+                                echo "<tr><td colspan=4>目前無資料</td></tr>";
+                            }
+                        ?>
                     </tbody>
                 </table>
             </div>

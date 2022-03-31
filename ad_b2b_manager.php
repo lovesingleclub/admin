@@ -62,6 +62,9 @@
         $keyword = SqlFilter($_REQUEST["keyword"],"tab");
         $sqlss = $sqlss . " and (uid like '%".$keyword."%' or name like '%".$keyword."%')";
     }
+    if($_REQUEST["branch"] != ""){
+        $branch = SqlFilter($_REQUEST["branch"],"tab");
+    }
     if($_REQUEST["single"] != ""){
         $single = SqlFilter($_REQUEST["single"],"tab");
         $sqlss = $sqlss . " and (csingle = '".$single."')";
@@ -120,7 +123,7 @@
                     <form name="form1" method="post" action="?vst=full" class="form-inline">
                         <p>
                             <a href="ad_b2b_manager_add.php" class="btn btn-success">新增資料</a>
-                            <input type="text" name="keyword" class="form-control" placeholder="名稱/代號關鍵字" value="">
+                            <input type="text" name="keyword" class="form-control" placeholder="名稱/代號關鍵字" value="<?php echo $keyword; ?>">
                             <select name="branch" id="branch">
                                 <option value="">上線會館</option>
                                 <?php
@@ -128,13 +131,29 @@
                                     $rs = $SPConn->prepare($SQL);
                                     $rs->execute();
                                     $result=$rs->fetchAll(PDO::FETCH_ASSOC);                                
-                                    foreach($result as $re){     
-                                        echo "<option value='".$re["admin_name"]."'>".$re["admin_name"]."</option>";                               
+                                    foreach($result as $re){ 
+                                        if($branch == $re["admin_name"]){
+                                            echo "<option value='".$re["admin_name"]."' selected>".$re["admin_name"]."</option>";  
+                                        }else{
+                                            echo "<option value='".$re["admin_name"]."'>".$re["admin_name"]."</option>";  
+                                        }                                                                     
                                     }                                           
                                 ?>
                             </select>
                             <select name="single" id="single">
                                 <option value="">請選擇</option>
+                                <?php
+                                if ( $branch != "" ){
+                                    $SQL = "Select p_user, p_name, p_other_name, lastlogintime From personnel_data Where p_branch = '".$branch."' Order By p_desc2 Desc, lastlogintime Desc";
+                                    $rs = $SPConn->prepare($SQL);
+                                    $rs->execute();
+                                    $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                                    if ( count($result) > 0 ){
+                                        foreach($result as $re){?>
+                                            <option value="<?php echo $re["p_user"];?>"<?php if ( $single == $re["p_user"] ){?> selected<?php }?>><?php echo $re["p_other_name"]?></option>
+                                        <?php }?>
+                                    <?php }?>
+                                <?php }?>
                             </select>
                             <input type="submit" name="Submit" class="btn btn-default" value="送出">
                         </p>

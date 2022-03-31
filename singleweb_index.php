@@ -1,8 +1,10 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar.php");
+
+    
 ?>
 
 <!-- MIDDLE -->

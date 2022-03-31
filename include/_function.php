@@ -154,50 +154,36 @@
 	
 	//彈跳訊息
 	function call_alert( $msg, $url, $outtime ){
-		switch( $url ){
-			case "nClose":
-				echo "<script language=\"javascript\">" ;
-				echo "alert('".$msg."');" ;
-				echo "window.close();" ;
-				echo "</script>" ;
-				exit() ;
-				break;
-			case 0:
-				echo "<script language=\"javascript\">" ;
-				echo "alert('" . $msg ."');";
-				echo "window.setTimeout(location.href='history.back(1)'," . $outtime .");";
-				echo "</script>" ;
-				break;
-			case "ClOsE":
-				echo "<script language='JavaScript'>";
-				if( $msg != "" ){
-					echo "alert('" .$msg. "');";
-				}
-				echo "window.setTimeout('window.close();');";	
-				echo "</script>";
-				break;
-			case "UpLoAd":
-				echo "<script language='javascript1.2'>";
-				echo "alert('" .$msg. "');opener.window.location.reload();window.setTimeout('window.close();');";
-				echo "</script>";
-				break;
-			case "Reload":
-				echo "<script language='javascript1.2'>";
-				echo "window.location.reload();";
-				echo "</script>";
-				break;
-			default:
-				echo "<script language=\"javascript\">" ;
-				echo "alert('" . $msg ."');";
-				if ( $url != "" && is_string($url)){
-					echo "window.setTimeout(location.href='" . $url . "'," . $outtime .");";
-				}else {
-					echo "window.setTimeout(location.href='history.back(1)'," . $outtime .");";
-				}
-				echo "</script>" ;
-				break;
-		}
-		// exit();
+        if($url === "nClose"){
+            echo "<script language=\"javascript\">" ;
+            echo "alert('".$msg."');" ;
+            echo "window.close();" ;
+            echo "</script>" ;
+        }elseif($url === "ClOsE"){
+            echo "<script language='JavaScript'>";
+            if( $msg != "" ){
+                echo "alert('" .$msg. "');";
+            }
+            echo "window.setTimeout('window.close();');";	
+            echo "</script>";
+        }elseif($url === "UpLoAd"){
+            echo "<script language='javascript1.2'>";
+            echo "alert('" .$msg. "');opener.window.location.reload();window.setTimeout('window.close();');";
+            echo "</script>";
+        }elseif($url === "Reload"){
+            echo "<script language='javascript1.2'>";
+            echo "window.location.reload();";
+            echo "</script>";
+        }else{
+            echo "<script language=\"javascript\">" ;
+            echo "alert('" . $msg ."');";
+            if ( $url != "" && is_string($url)){
+                echo "window.setTimeout(location.href='" . $url . "'," . $outtime .");";
+            }else {
+                echo "window.setTimeout(location.href='history.back(1)'," . $outtime .");";
+            }
+            echo "</script>" ;
+        }
 	}
 	
 	function SqlFilter($content,$strType){
@@ -743,7 +729,7 @@
 	}
 
 	// 好好玩處理情形下拉選單
-	function fun_report_option(){
+	function fun_report_option($val){
 		$alloptions = Array("請選擇","有意願","無意願","下次聯絡","未接","停話","PASS春天","勿再聯絡");
 		foreach($alloptions as $opt){
 			if($opt == "請選擇"){
@@ -751,7 +737,11 @@
 			}else{
 				$opt1 = $opt;
 			}
-			echo "<option value='".$opt1."'>".$opt."</option>";
+			if($val == $opt1){
+				echo "<option value='".$opt1."' selected>".$opt."</option>";
+			}else{
+				echo "<option value='".$opt1."'>".$opt."</option>";
+			}			
 		}
 	}
 
@@ -1106,4 +1096,22 @@
 			}
 		}
 	}
+
+    // 活動ac_stats
+    function ac_stats($b) {
+        switch($b){
+            case 0:
+                $ac_stats = "";
+                break;
+            case 1:
+                $ac_stats = "取消";
+                break;
+            case 2:
+                $ac_stats = "新增";
+                break;
+            default:
+                $ac_stats = "";
+        }
+        return $ac_stats;
+    }
 ?>

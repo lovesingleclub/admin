@@ -19,6 +19,10 @@
         call_alert("您沒有查看此頁的權限。","login.php",0);
     }
 
+    //接收值
+    $times1 = SqlFilter($_REQUEST["times1"],"tab");
+    $times2 = SqlFilter($_REQUEST["times2"],"tab");
+
     // 檢查權限查詢-總筆數
     switch($_SESSION["MM_UserAuthorization"]){
         case "admin":
@@ -32,50 +36,55 @@
     }
 
     if($_REQUEST["y1"] != ""){
-        $acre_sign1 = SqlFilter($_REQUEST["y1"],"tab")."/".SqlFilter($_REQUEST["m1"],"tab")."/".SqlFilter($_REQUEST["d1"],"tab")." 00:00";
-        if(!chkDate($acre_sign1)){
+        $times1 = SqlFilter($_REQUEST["y1"],"tab")."/".SqlFilter($_REQUEST["m1"],"tab")."/".SqlFilter($_REQUEST["d1"],"tab")." 00:00";
+        if(!chkDate($times1)){
             call_alert("起始日期有誤。", 0, 0);
         }
     }
 
     if($_REQUEST["y2"] != ""){
-        $acre_sign2 = SqlFilter($_REQUEST["y2"],"tab")."/".SqlFilter($_REQUEST["m2"],"tab")."/".SqlFilter($_REQUEST["d2"],"tab")." 23:59";
-        if(!chkDate($acre_sign2)){
+        $times2 = SqlFilter($_REQUEST["y2"],"tab")."/".SqlFilter($_REQUEST["m2"],"tab")."/".SqlFilter($_REQUEST["d2"],"tab")." 23:59";
+        if(!chkDate($times2)){
             call_alert("結束日期有誤。", 0, 0);
         }
     }
 
     // 以回報日期搜尋
-    if(chkDate($acre_sign1) && chkDate($acre_sign2)){
-        if(strtotime($acre_sign1) > strtotime($acre_sign2)){
+    if(chkDate($times1) && chkDate($times2)){
+        if(strtotime($times1) > strtotime($times2)){
             call_alert("結束日期不能大於起始日期。", 0, 0);
         }
-        $sqlss = $sqlss . " and log_time between '".$acre_sign1."' and '".$acre_sign2."'";
+        $sqlss = $sqlss . " and log_time between '".$times1."' and '".$times2."'";
     }
 
     // 以姓名搜尋
-    if($_REQUEST["s3"] != ""){
-        $sqlss = $sqlss . " and log_username like '%" . str_replace("'", "''", SqlFilter($_REQUEST["s3"],"tab")) . "%'";
+    if($_REQUEST["keyword"] != ""){
+        $keyword = SqlFilter($_REQUEST["keyword"],"tab");
+        $sqlss = $sqlss . " and log_username like '%" . str_replace("'", "''", $keyword) . "%'";
     }
 
     // 以會館搜尋
-    if($_REQUEST["s6"] != ""){
-        $sqlss = $sqlss . " and log_branch like '%" . str_replace("'", "''", SqlFilter($_REQUEST["s6"],"tab")) . "%'";
+    if($_REQUEST["branch"] != ""){
+        $branch = SqlFilter($_REQUEST["branch"],"tab");
+        $sqlss = $sqlss . " and log_branch like '%" . str_replace("'", "''", $branch) . "%'";
     }
 
     // 以秘書搜尋
-    if($_REQUEST["s7"] != ""){
-        $sqlss = $sqlss . " and log_single like '%" . str_replace("'", "''", SqlFilter($_REQUEST["s7"],"tab")) . "%'";
+    if($_REQUEST["single"] != ""){
+        $single = SqlFilter($_REQUEST["single"],"tab");
+        $sqlss = $sqlss . " and log_single like '%" . str_replace("'", "''", $single) . "%'";
     }
 
     // 以處理情搜尋
-    if($_REQUEST["s8"] != ""){
-        $sqlss = $sqlss . " and log_2 = '" . str_replace("'", "''", SqlFilter($_REQUEST["s8"],"tab")) . "'";
+    if($_REQUEST["types"] != ""){
+        $types = SqlFilter($_REQUEST["types"],"tab");
+        $sqlss = $sqlss . " and log_2 = '" . str_replace("'", "''", $types) . "'";
     }
 
     // 以處理情搜尋2
-    if($_REQUEST["s9"] != ""){
-        $sqlss = $sqlss . " and log_3 like '%" . str_replace("'", "''", SqlFilter($_REQUEST["s9"],"tab")) . "%'";
+    if($_REQUEST["oby"] != ""){
+        $oby = SqlFilter($_REQUEST["oby"],"tab");
+        $sqlss = $sqlss . " and log_3 like '%" . str_replace("'", "''", $oby) . "%'";
     }
 
     // 總筆數SQL
@@ -154,7 +163,11 @@
                                 <option value="" selected>請選擇</option>
                                 <?php 
                                     for($i=date("Y");$i>=2000;$i--){
-                                        echo "<option value='".$i."'>".$i."</option>";
+                                        if(date("Y",strtotime($times1)) == $i && $times1 != NULL){
+                                            echo "<option value='".$i."' selected>".$i."</option>";
+                                        }else{
+                                            echo "<option value='".$i."'>".$i."</option>";
+                                        }                                        
                                     }
                                 ?>
                             </select>
@@ -163,7 +176,11 @@
                                 <option value="">請選擇</option>
                                 <?php 
                                     for($i=1;$i<=12;$i++){
-                                        echo "<option value='".$i."'>".$i."</option>";
+                                        if(date("m",strtotime($times1)) == $i && $times1 != NULL){
+                                            echo "<option value='".$i."' selected>".$i."</option>";
+                                        }else{
+                                            echo "<option value='".$i."'>".$i."</option>";
+                                        }                                        
                                     }
                                 ?>
                             </select>
@@ -172,7 +189,11 @@
                                 <option value="">請選擇</option>
                                 <?php 
                                     for($i=1;$i<=31;$i++){
-                                        echo "<option value='".$i."'>".$i."</option>";
+                                        if(date("d",strtotime($times1)) == $i && $times1 != NULL){
+                                            echo "<option value='".$i."' selected>".$i."</option>";
+                                        }else{
+                                            echo "<option value='".$i."'>".$i."</option>";
+                                        } 
                                     }
                                 ?>
                             </select>
@@ -181,7 +202,11 @@
                                 <option value="" selected>請選擇</option>
                                 <?php 
                                     for($i=date("Y");$i>=2000;$i--){
-                                        echo "<option value='".$i."'>".$i."</option>";
+                                        if(date("Y",strtotime($times2)) == $i && $times2 != NULL){
+                                            echo "<option value='".$i."' selected>".$i."</option>";
+                                        }else{
+                                            echo "<option value='".$i."'>".$i."</option>";
+                                        }
                                     }
                                 ?>
                             </select>
@@ -190,7 +215,11 @@
                                 <option value="">請選擇</option>
                                 <?php 
                                     for($i=1;$i<=12;$i++){
-                                        echo "<option value='".$i."'>".$i."</option>";
+                                        if(date("m",strtotime($times2)) == $i && $times2 != NULL){
+                                            echo "<option value='".$i."' selected>".$i."</option>";
+                                        }else{
+                                            echo "<option value='".$i."'>".$i."</option>";
+                                        }
                                     }
                                 ?>
                             </select>
@@ -199,14 +228,18 @@
                                 <option value="">請選擇</option>
                                 <?php 
                                     for($i=1;$i<=31;$i++){
-                                        echo "<option value='".$i."'>".$i."</option>";
+                                        if(date("d",strtotime($times2)) == $i && $times2 != NULL){
+                                            echo "<option value='".$i."' selected>".$i."</option>";
+                                        }else{
+                                            echo "<option value='".$i."'>".$i."</option>";
+                                        }
                                     }
                                 ?>
                             </select>
                             日
                         </p>
                         <p>會館：
-                            <select name="s6" id="branch">
+                            <select name="branch" id="branch">
                                 <option value="">請選擇</option>
                                 <?php
                                     //可視會館名稱
@@ -224,11 +257,11 @@
                                     $rs->execute();
                                     $result=$rs->fetchAll(PDO::FETCH_ASSOC);
                                     foreach($result as $re){ ?>
-                                        <option value="<?php echo $re["admin_name"];?>"<?php if ( SqlFilter($_REQUEST["branch"],"tab") == $re["admin_name"] ){?> selected<?php }?>><?php echo $re["admin_name"];?></option>
+                                        <option value="<?php echo $re["admin_name"];?>"<?php if ( $branch == $re["admin_name"] ){?> selected<?php }?>><?php echo $re["admin_name"];?></option>
                                 <?php }?>
                             </select>
                             秘書：
-                            <select name="s7" id="single">
+                            <select name="single" id="single">
                                 <option value="">請選擇</option>
                                 <?php
                                     if ( $_REQUEST["flag"] == "1" ){ 
@@ -244,31 +277,32 @@
                                             if ( $re_er["p_name"] != "" ){ $p_name = $re_er["p_name"]; }
                                             if ( $re_er["p_other_name"] != "" ){ $p_name = $re_er["p_other_name"]; }
                                             echo "<option value='".$re_er["p_user"]."'";
+                                            if($single == $re_er["p_user"]) echo " selected";
                                             echo ">".$p_name."</option>";
                                         }
                                 }?>
                             </select>
                             姓名：
-                            <input name="s3" type="text" class="form-control">
+                            <input name="keyword" type="text" class="form-control" value="<?php echo $keyword ?>">
                         </p>
                         <p>
-                            處理情形：<select name="s8">
-                                <?php fun_report_option(); ?>
+                            處理情形：<select name="types">
+                                <?php fun_report_option($types); ?>
                             </select>
-                            <select name="s9">
+                            <select name="oby">
                                 <option value="">請選擇</option>
-                                <option value="不確定時間">不確定時間</option>
-                                <option value="考量1-3月出國">考量1-3月出國</option>
-                                <option value="考量4-6月出國">考量4-6月出國</option>
-                                <option value="考量7-9月出國">考量7-9月出國</option>
-                                <option value="考量10-12月出國">考量10-12月出國</option>
-                                <option value="不確定地點">不確定地點</option>
-                                <option value="考量去東北亞(日韓)">考量去東北亞(日韓)</option>
-                                <option value="考量去東南亞(馬新泰菲印)">考量去東南亞(馬新泰菲印)</option>
-                                <option value="考量去自由行">考量去自由行</option>
-                                <option value="考量去島嶼">考量去島嶼</option>
-                                <option value="考量去澳洲">考量去澳洲</option>
-                                <option value="考量去美加">考量去美加</option>
+                                <option value="不確定時間"<?php if($oby == "不確定時間") echo " selected" ?>>不確定時間</option>
+                                <option value="考量1-3月出國"<?php if($oby == "考量1-3月出國") echo " selected" ?>>考量1-3月出國</option>
+                                <option value="考量4-6月出國"<?php if($oby == "考量4-6月出國") echo " selected" ?>>考量4-6月出國</option>
+                                <option value="考量7-9月出國"<?php if($oby == "考量7-9月出國") echo " selected" ?>>考量7-9月出國</option>
+                                <option value="考量10-12月出國"<?php if($oby == "考量10-12月出國") echo " selected" ?>>考量10-12月出國</option>
+                                <option value="不確定地點"<?php if($oby == "不確定地點") echo " selected" ?>>不確定地點</option>
+                                <option value="考量去東北亞(日韓)"<?php if($oby == "考量去東北亞(日韓)") echo " selected" ?>>考量去東北亞(日韓)</option>
+                                <option value="考量去東南亞(馬新泰菲印)"<?php if($oby == "考量去東南亞(馬新泰菲印)") echo " selected" ?>>考量去東南亞(馬新泰菲印)</option>
+                                <option value="考量去自由行"<?php if($oby == "考量去自由行") echo " selected" ?>>考量去自由行</option>
+                                <option value="考量去島嶼"<?php if($oby == "考量去島嶼") echo " selected" ?>>考量去島嶼</option>
+                                <option value="考量去澳洲"<?php if($oby == "考量去澳洲") echo " selected" ?>>考量去澳洲</option>
+                                <option value="考量去美加"<?php if($oby == "考量去美加") echo " selected" ?>>考量去美加</option>
                             </select>
                             　<input type="submit" name="Submit" style="height:28px;margin-top:-7px;" value="查詢"> <input type="reset" name="reset" style="height:28px;margin-top:-7px;" value="清空">
                         </p>

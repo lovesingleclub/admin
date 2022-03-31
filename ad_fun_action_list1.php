@@ -63,34 +63,39 @@
 
 
     // 活動類型搜尋
-    if($_REQUEST["s1"] != "" ){
-        $sqlss = $sqlss . " and ac_kind = '" .SqlFilter($_REQUEST["s1"],"tab")."'";
+    if($_REQUEST["types"] != "" ){
+        $types = SqlFilter($_REQUEST["types"],"tab");
+        $sqlss = $sqlss . " and ac_kind = '" .$types."'";
     }    
 
     // 活動標題搜尋
-    if($_REQUEST["s3"] != "" ){
-        $sqlss = $sqlss . " and ac_title like '%" .SqlFilter($_REQUEST["s3"],"tab")."%'";
+    if($_REQUEST["keyword"] != "" ){
+        $keyword = SqlFilter($_REQUEST["keyword"],"tab");
+        $sqlss = $sqlss . " and ac_title like '%" .$keyword."%'";
     }
 
     // 開發者搜尋
-    if($_REQUEST["s5"] != "" ){
-        $sqlss = $sqlss . " and ac_open2 = '" .SqlFilter($_REQUEST["s5"],"tab")."'";
+    if($_REQUEST["oby"] != "" ){
+        $oby = SqlFilter($_REQUEST["oby"],"tab");
+        $sqlss = $sqlss . " and ac_open2 = '" .$oby."'";
     }
 
 
-    if( $_REQUEST["s21"] != "" && $_REQUEST["s22"] != "" ){
-        if( chkDate($_REQUEST["s21"]) && chkDate($_REQUEST["s22"]) ){
-            $kt1 = SqlFilter($_REQUEST["s21"],"tab"). " 00:00";
-            $kt2 = SqlFilter($_REQUEST["s22"],"tab"). " 23:59"; 
+    if( $_REQUEST["times1"] != "" && $_REQUEST["times2"] != "" ){
+        if( chkDate($_REQUEST["times1"]) && chkDate($_REQUEST["times2"]) ){
+            $times1_1 = SqlFilter($_REQUEST["times1"],"tab"). " 00:00";
+            $times1 = SqlFilter($_REQUEST["times1"],"tab");
+            $times2_1 = SqlFilter($_REQUEST["times2"],"tab"). " 23:59";
+            $times2 = SqlFilter($_REQUEST["times2"],"tab");
         }        
     }
 
     // 以活動時間段搜尋
-    if(chkDate($kt1) && chkDate($kt2)){        
-        if(strtotime($kt1) > strtotime($kt2)){
+    if(chkDate($times1_1) && chkDate($times2_1)){        
+        if(strtotime($times1_1) > strtotime($times2_1)){
             call_alert("結束日期不能小於起始日期。", 0, 0);
         }
-        $sqlss = $sqlss . " and ac_time between '".$kt1."' and '".$kt2."'";
+        $sqlss = $sqlss . " and ac_time between '".$times1_1."' and '".$times2_1."'";
     }
 
     // 特殊使用者搜尋
@@ -164,21 +169,21 @@
             <div class="panel-body">
                 <div class="col-md-12">
                     <a href="ad_fun_action_list1_add.php" class="btn btn-info margin-bottom-10"><i class="icon-plus-sign"></i> 新增國內活動</a>
-                    <a href="ad_fun_action_list1_print.php?acre_sign1=<?php echo $kt1; ?>&acre_sign2=<?php echo $kt2; ?>" class="btn btn-info margin-bottom-10"><i class="icon-plus-sign"></i> 列印本頁</a>
+                    <a href="ad_fun_action_list1_print.php?acre_sign1=<?php echo $times1_1; ?>&acre_sign2=<?php echo $times2_1; ?>" class="btn btn-info margin-bottom-10"><i class="icon-plus-sign"></i> 列印本頁</a>
 
 
                     <form id="searchform" action="ad_fun_action_list1.php?vst=full" method="post" target="_self" class="form-inline" onsubmit="return check_send_submit()">
                         <table class="table table-striped table-bordered bootstrap-datatable">
                             <tr>
-                                <td><select name="s1">
+                                <td><select name="types">
                                         <option value="">活動類型</option>
-                                        <option value="戶外活動">戶外活動</option>
-                                        <option value="主題派對">主題派對</option>
-                                        <option value="午茶聯誼">午茶聯誼</option>
-                                        <option value="特別企劃">特別企劃</option>
+                                        <option value="戶外活動"<?php if($types == "戶外活動") echo " selected"; ?>>戶外活動</option>
+                                        <option value="主題派對"<?php if($types == "主題派對") echo " selected"; ?>>主題派對</option>
+                                        <option value="午茶聯誼"<?php if($types == "午茶聯誼") echo " selected"; ?>>午茶聯誼</option>
+                                        <option value="特別企劃"<?php if($types == "特別企劃") echo " selected"; ?>>特別企劃</option>
                                     </select>
                                     &nbsp;&nbsp;
-                                    <select name="s5">
+                                    <select name="oby">
                                         <option value="">開發者</option>
                                         <?php 
                                             $SQL = "select distinct ac_open2 from action_data where ac_open2 <> ''";
@@ -187,14 +192,18 @@
                                             $result = $rs->fetchAll(PDO::FETCH_ASSOC);
                                             if($result){
                                                 foreach($result as $re){
-                                                    echo "<option value='".$re["ac_open2"]."'>".SingleName($re["ac_open2"],"normal")."</option>";
+                                                    if($oby == $re["ac_open2"]){
+                                                        echo "<option value='".$re["ac_open2"]."' selected>".SingleName($re["ac_open2"],"normal")."</option>";
+                                                    }else{
+                                                        echo "<option value='".$re["ac_open2"]."'>".SingleName($re["ac_open2"],"normal")."</option>";
+                                                    }                                                    
                                                 }                                                
                                             }
                                         ?>
                                     </select>
                                 </td>
-                                <td>活動時間：<input name="s21" id="s21" type="text" class="datepicker" autocomplete="off">～<input name="s22" id="s22" type="text" class="datepicker" autocomplete="off"></td>
-                                <td>活動標題：<input name="s3" type="text" class="form-control"></td>
+                                <td>活動時間：<input name="times1" id="times1" type="text" class="datepicker" autocomplete="off" value="<?php echo $times1 ?>">～<input name="times2" id="times2" type="text" class="datepicker" autocomplete="off" value="<?php echo $times2 ?>"></td>
+                                <td>活動標題：<input name="keyword" type="text" class="form-control" value="<?php echo $keyword; ?>"></td>
                                 <td><input type="submit" value="搜尋" class="btn btn-default"></td>
                             </tr>
                         </table>
@@ -335,12 +344,12 @@
     });
 
     function check_send_submit() {
-        if (($("#s21").val() && !$("#s22").val()) || ($("#s22").val() && !$("#s21").val())) {
+        if (($("#times1").val() && !$("#times2").val()) || ($("#times2").val() && !$("#times1").val())) {
             alert("請正確選擇活動時間的兩個區間時間。");
             return false;
         }
-        if ($("#s21").val() && $("#s22").val()) {
-            if ($("#s21").val() > $("#s22").val()) {
+        if ($("#times1").val() && $("#times2").val()) {
+            if ($("#times1").val() > $("#times2").val()) {
                 alert("起始活動時間不可以比結束活動時間大。");
                 return false;
             }

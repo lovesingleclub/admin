@@ -1,8 +1,70 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：springweb_fun4.php
+    //後台對應位置：春天網站系統/活動聯誼-Banner
+    //改版日期：2022.4.3
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar_spring.php");
+
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+
+    if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["funtourpm"] != "1"){
+        call_alert("您沒有查看此頁的權限。", "login.php", 0);
+    }
+
+    // 圖片上移
+    if($_REQUEST["st"] == "mup"){
+        $nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+        $upline = $nowline+1;
+        $SQL = "update webdata set i1=".$nowline." where i1=".$upline."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+
+        reURL("springweb_fun4.php");
+    }
+
+    // 圖片下移
+    if($_REQUEST["st"] == "mdo"){
+        $nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+        $upline = $nowline-1;
+        $SQL = "update webdata set i1=".$nowline." where i1=".$upline."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+
+        reURL("springweb_fun4.php");
+    }
+
+    // 刪除圖片(待測試)
+    if($_REQUEST["st"] == "del"){
+        $SQL = "select d2 from webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='action_banner'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            DelFile(("upload_image/".$result["d2"]));
+            $SQL = "delete from webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='action_banner'";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+            if($rs){
+                reURL("springweb_fun4.php");
+            }
+        }        
+    }
 ?>
 
 <!-- MIDDLE -->
@@ -37,63 +99,39 @@ require_once("./include/_sidebar.php");
                             <th width="160">資料時間</th>
                             <th>操作</th>
                         </tr>
-
-                        <tr>
-                            <td><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=1630&i1=24"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="upload_image/action_banner_1630.jpg" class="fancybox"><img src="upload_image/action_banner_1630.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/event/13271?cc=springclub_officialwebsite_homepage</td>
-                            <td>2021/10/12 下午 04:29:25</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun4_add.php?an=1630','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun4.php?st=del&an=1630">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=1629&i1=23"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=1629&i1=23"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="upload_image/action_banner_1629.jpg" class="fancybox"><img src="upload_image/action_banner_1629.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/event/13203?cc=springclub_officialwebsite_homepage</td>
-                            <td>2021/10/12 下午 04:27:52</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun4_add.php?an=1629','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun4.php?st=del&an=1629">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=1632&i1=22"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=1632&i1=22"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="upload_image/action_banner_1632.jpg" class="fancybox"><img src="upload_image/action_banner_1632.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/event/13349?cc=springclub_officialwebsite_homepage</td>
-                            <td>2021/10/12 下午 04:33:04</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun4_add.php?an=1632','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun4.php?st=del&an=1632">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=1631&i1=21"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=1631&i1=21"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="upload_image/action_banner_1631.jpg" class="fancybox"><img src="upload_image/action_banner_1631.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/event/13362?cc=springclub_officialwebsite_homepage</td>
-                            <td>2021/10/12 下午 04:31:32</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun4_add.php?an=1631','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun4.php?st=del&an=1631">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=559&i1=20"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="#nu" onclick="alert('無法向下');"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="upload_image/action_banner_559.jpg" class="fancybox"><img src="upload_image/action_banner_559.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/20200910/?cc=springclub_officialwebsite_homepage</td>
-                            <td>2020/9/22 下午 01:19:46</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun4_add.php?an=559','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun4.php?st=del&an=559">刪除</a>
-                            </td>
-                        </tr>
-
-
+                        <?php 
+                            $SQL = "SELECT * FROM webdata where types='action_banner' order by i1 desc";
+                            $rs = $SPConn->prepare($SQL);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){
+                                $ii = 0;
+                                foreach($result as $re){
+                                    if($ii == 0){
+                                        $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                    }else{
+                                        $uahref = "?st=mup&an=".$re["auton"]."&i1=".$re["i1"];
+                                    }                                   
+                                    if($ii == count($result)-1){
+                                        $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                    }else{
+                                        $dahref = "?st=mdo&an=".$re["auton"]."&i1=".$re["i1"];
+                                    } ?>
+                                    <tr>
+                                        <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>
+                                        <td><a href="upload_image/<?php echo $re["d2"] ?>" class="fancybox"><img src="upload_image/<?php echo $re["d2"] ?>" border=0 height=40></a></td>
+                                        <td><?php echo $re["d1"] ?></td>
+                                        <td><?php echo changeDate($re["t1"]) ?></td>
+                                        <td>
+                                            <a href="javascript:Mars_popup('springweb_fun4_add.php?an=<?php echo $re["auton"] ?>','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
+                                            <a title="刪除" href="springweb_fun4.php?st=del&an=<?php echo $re["auton"] ?>">刪除</a>						
+                                        </td>
+                                    </tr>
+                                <?php $ii = $ii+1; }   
+                            }else{
+                                echo "<tr><td colspan=4>目前無資料</td></tr>";
+                            }
+                        ?>
                     </tbody>
                 </table>
             </div>

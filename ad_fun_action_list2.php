@@ -87,26 +87,30 @@
         $sqlss = $sqlss . " and ac_kind = '".SqlFilter($_REQUEST["s1"],"tab")."'";
     }
     // 以類型搜尋
-    if($_REQUEST["t"]){
-        $sqlss = $sqlss . " and stype = '".SqlFilter($_REQUEST["t"],"tab")."'";
+    if($_REQUEST["types"]){
+        $types = SqlFilter($_REQUEST["types"],"tab");
+        $sqlss = $sqlss . " and stype = '".$types."'";
     }
     // 以標題搜尋
-    if($_REQUEST["s3"]){
-        $sqlss = $sqlss . " and ac_title like '%" . str_replace("'", "''", $_REQUEST["s3"]) . "%'";
+    if($_REQUEST["keyword"]){
+        $keyword = SqlFilter($_REQUEST["keyword"],"tab");
+        $sqlss = $sqlss . " and ac_title like '%" . str_replace("'", "''", $keyword) . "%'";
     }
 
-    if( $_REQUEST["s21"] != "" && $_REQUEST["s22"] != "" ){
-        if( chkDate($_REQUEST["s21"]) && chkDate($_REQUEST["s22"]) ){
-            $kt1 = SqlFilter($_REQUEST["s21"],"tab"). " 00:00";
-            $kt2 = SqlFilter($_REQUEST["s22"],"tab"). " 23:59"; 
+    if( $_REQUEST["times1"] != "" && $_REQUEST["times2"] != "" ){
+        if( chkDate($_REQUEST["times1"]) && chkDate($_REQUEST["times2"]) ){
+            $times1_1 = SqlFilter($_REQUEST["times1"],"tab"). " 00:00";
+            $times1 = SqlFilter($_REQUEST["times1"],"tab");
+            $times2_1 = SqlFilter($_REQUEST["times2"],"tab"). " 23:59"; 
+            $times2 = SqlFilter($_REQUEST["times2"],"tab"); 
         }        
     }
     // 以活動時間段搜尋
-    if(chkDate($kt1) && chkDate($kt2)){        
-        if(strtotime($kt1) > strtotime($kt2)){
+    if(chkDate($times1_1) && chkDate($times2_1)){        
+        if(strtotime($times1_1) > strtotime($times2_1)){
             call_alert("結束日期不能小於起始日期。", 0, 0);
         }
-        $sqlss = $sqlss . " and ac_time between '".$kt1."' and '".$kt2."'";
+        $sqlss = $sqlss . " and ac_time between '".$times1_1."' and '".$times2_1."'";
     }
 
     // 只取全部的筆數
@@ -201,14 +205,14 @@
                         <table class="table table-striped table-bordered bootstrap-datatable">
                             <tr>
                                 <td>類型：
-                                    <select name="t">
+                                    <select name="types">
                                         <option value="">所有類型</option>
-                                        <option value="LOVE旅遊">LOVE旅遊</option>
-                                        <option value="FUN旅遊">FUN旅遊</option>
+                                        <option value="LOVE旅遊"<?php if($types == "LOVE旅遊") echo " selected" ?>>LOVE旅遊</option>
+                                        <option value="FUN旅遊"<?php if($types == "FUN旅遊") echo " selected" ?>>FUN旅遊</option>
                                     </select>
                                 </td>
-                                <td>活動時間：<input name="s21" id="s21" type="text" class="datepicker" autocomplete="off">～<input name="s22" id="s22" type="text" class="datepicker" autocomplete="off"></td>
-                                <td>活動標題：<input name="s3" type="text" class="form-control"></td>
+                                <td>活動時間：<input name="times1" id="times1" type="text" class="datepicker" autocomplete="off" value="<?php echo $times1 ?>">～<input name="times2" id="times2" type="text" class="datepicker" autocomplete="off" value="<?php echo $times2 ?>"></td>
+                                <td>活動標題：<input name="keyword" type="text" class="form-control"></td>
                                 <td><input type="submit" value="搜尋" class="btn btn-default"></td>
                             </tr>
                         </table>

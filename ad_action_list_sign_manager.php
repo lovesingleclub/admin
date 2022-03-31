@@ -51,30 +51,31 @@
 
     // 關鍵字搜尋
     if($_REQUEST["keyword"] != ""){
-        $sqlss = $sqlss." and (notes like '%".SqlFilter($_REQUEST["keyword"],"tab")."%' or statnote like '%".SqlFilter($_REQUEST["keyword"],"tab")."%')";
+        $keyword = SqlFilter($_REQUEST["keyword"],"tab");
+        $sqlss = $sqlss." and (notes like '%".$keyword."%' or statnote like '%".$keyword."%')";
     }
 
     // 申請日期(起始日期)
-    if($_REQUEST["start_time"] != ""){
-        $start_time = SqlFilter($_REQUEST["start_time"],"tab")." 00:00";
-        $start_time2 = SqlFilter($_REQUEST["start_time"],"tab");
-        if(!chkDate($start_time)){
+    if($_REQUEST["times1"] != ""){
+        $times1_1 = SqlFilter($_REQUEST["times1"],"tab")." 00:00";
+        $times1 = SqlFilter($_REQUEST["times1"],"tab");
+        if(!chkDate($times1)){
             call_alert("申請日期有誤。", 0, 0);
         }
     }
 
     // 申請日期(結束日期)
-    if($_REQUEST["end_time"] != ""){
-        $end_time = SqlFilter($_REQUEST["end_time"],"tab")." 23:59";
-        $end_time2 = SqlFilter($_REQUEST["end_time"],"tab");
-        if(!chkDate($end_time)){
+    if($_REQUEST["times2"] != ""){
+        $times2_1 = SqlFilter($_REQUEST["times2"],"tab")." 23:59";
+        $times2 = SqlFilter($_REQUEST["times2"],"tab");
+        if(!chkDate($times2)){
             call_alert("申請日期有誤。", 0, 0);
         }
     }
 
     // 申請日期
-    if(chkDate($start_time) && chkDate($end_time)){
-        $sqlss = $sqlss . " and times between '".$start_time."' and '".$end_time."'";
+    if(chkDate($times1_1) && chkDate($times2_1)){
+        $sqlss = $sqlss . " and times between '".$times1_1."' and '".$times2_1."'";
     }
 
     //計算總筆數
@@ -168,8 +169,8 @@
                             </ul>
                         </div>　
                     </span>
-                    <input type="text" name="start_time" id="start_time" class="datepicker" autocomplete="off" value="<?php echo $start_time2; ?>" placeholder="申請日期開始">　～　<input type="text" name="end_time" id="end_time" class="datepicker" autocomplete="off" value="<?php echo $end_time2; ?>" placeholder="申請日期結束">
-                    <input id="keyword" name="keyword" id="keyword" class="form-control" type="text" placeholder="搜尋內容" value="<?php echo SqlFilter($_REQUEST["keyword"],"tab"); ?>">
+                    <input type="text" name="times1" id="times1" class="datepicker" autocomplete="off" value="<?php echo $times1; ?>" placeholder="申請日期開始">　～　<input type="text" name="times2" id="times2" class="datepicker" autocomplete="off" value="<?php echo $times2; ?>" placeholder="申請日期結束">
+                    <input id="keyword" name="keyword" id="keyword" class="form-control" type="text" placeholder="搜尋內容" value="<?php echo $keyword; ?>">
                     <input type="submit" id="search_send" class="btn btn-default" value="查詢">
                 </form>
                 </p>

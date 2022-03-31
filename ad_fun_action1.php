@@ -19,6 +19,7 @@
     
     // 接收值
     $vst = SqlFilter($_REQUEST["vst"],"tab");
+    $s99 = SqlFilter($_REQUEST["s99"],"int");
 
     if( $_REQUEST["a1"] != ""){ 
         $kt1 = SqlFilter($_REQUEST["a1"],"int") . "/" . SqlFilter($_REQUEST["a2"],"int") . "/1 00:01";
@@ -70,7 +71,7 @@
         case "admin":
             $sqls2 = "SELECT ".$sqlv2." as total_size FROM love_keyin WHERE all_kind <> '國外旅遊'";
             if($_REQUEST["sear"] != "1"){
-                if($_REQUEST["s99"] != ""){
+                if($_REQUEST["s99"] != ""){                    
                     $sqlss = $sqlss . " and all_type <> '未處理'";
 	                $all_type = "已處理";
                 }else{

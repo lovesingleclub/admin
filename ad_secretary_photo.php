@@ -41,10 +41,10 @@
     // 上傳圖檔(待測試)
     if($_REQUEST["st"] == "upload"){
         if ($_FILES['fileupload']['error'] === UPLOAD_ERR_OK){
-            $urlpath = "Upload/"; //儲存路徑
-            $ext = pathinfo($_FILES["file"]["name"][$i], PATHINFO_EXTENSION); //附檔名      
+            $urlpath = "upload_image/"; //儲存路徑
+            $ext = pathinfo($_FILES["fileupload"]["name"], PATHINFO_EXTENSION); //附檔名      
             $fileName = date("Y").date("n").date("j").date("H").date("i").date("s")."_".$p_auto."_".rand(1,999).".".$ext; //檔名
-            move_uploaded_file($_FILES["file"]["tmp_name"][$i],($urlpath.$fileName)); //儲存檔案
+            move_uploaded_file($_FILES["fileupload"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
             // 如果有資料便刪除原有檔案
             $SQL = "SELECT * FROM personnel_data Where p_auto=".$p_auto;
             $rs = $SPConn->prepare($SQL);

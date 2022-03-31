@@ -69,18 +69,18 @@
     }
 
     //起始日期
-    if($_REQUEST["start_time"] != ""){
-        $start_time = SqlFilter($_REQUEST["start_time"],"tab") . " 00:00";
-        $start_time2 = SqlFilter($_REQUEST["start_time"],"tab");
-        if(!chkDate($start_time)){
+    if($_REQUEST["times1"] != ""){
+        $times1_1 = SqlFilter($_REQUEST["times1"],"tab") . " 00:00";
+        $times1 = SqlFilter($_REQUEST["times1"],"tab");
+        if(!chkDate($times1_1)){
             call_alert("活動日期有誤。", 0, 0);
         }
     }
     //結束日期
-    if($_REQUEST["end_time"] != ""){
-        $end_time = SqlFilter($_REQUEST["end_time"],"tab") . " 23:59";
-        $end_time2 = SqlFilter($_REQUEST["end_time"],"tab");
-        if(!chkDate($start_time)){
+    if($_REQUEST["times2"] != ""){
+        $times2_1 = SqlFilter($_REQUEST["times2"],"tab") . " 23:59";
+        $times2 = SqlFilter($_REQUEST["times2"],"tab");
+        if(!chkDate($times2_1)){
             call_alert("活動日期有誤。", 0, 0);
         }
     }
@@ -108,16 +108,18 @@
             }
     }
 
-    if(chkDate($start_time) && chkDate($end_time)){
-        $sqlss = $sqlss . " and ac_time between '".$start_time."' and '".$end_time."'";
+    if(chkDate($times1_1) && chkDate($times2_1)){
+        $sqlss = $sqlss . " and ac_time between '".$times1_1."' and '".$times2_1."'";
     }
 
-    if($_REQUEST["s6"] != ""){
-        $sqlss = $sqlss . " and ac_branch = '" . str_replace("'", "''",SqlFilter($_REQUEST["s6"],"tab")) . "'";
+    if($_REQUEST["branch"] != ""){
+        $branch = SqlFilter($_REQUEST["branch"],"tab");
+        $sqlss = $sqlss . " and ac_branch = '" . str_replace("'", "''",$branch) . "'";
     }
 
     if($_REQUEST["keyword"] != ""){
-        $sqlss = $sqlss . " and (ac_title like '%".SqlFilter($_REQUEST["keyword"],"tab")."%' or ac_note like '%".SqlFilter($_REQUEST["keyword"],"tab")."%' or ac_auto like '%".SqlFilter($_REQUEST["keyword"],"tab")."%')";
+        $keyword = SqlFilter($_REQUEST["keyword"],"tab");
+        $sqlss = $sqlss . " and (ac_title like '%".$keyword."%' or ac_note like '%".$keyword."%' or ac_auto like '%".$keyword."%')";
     }
 
     //計算總筆數
@@ -195,8 +197,8 @@
                     <p><a href="ad_action_add.php" class="btn btn-info">新增活動</a></p>
                     <form name="form1" method="post" action="?vst=full" class="form-inline">
                         <p>
-                            <input type="text" name="start_time" id="start_time" class="datepicker" autocomplete="off" value="<?php echo $start_time2; ?>" placeholder="活動日期開始">　～　<input type="text" name="end_time" id="end_time" class="datepicker" autocomplete="off" value="<?php echo $end_time2; ?>" placeholder="活動日期結束">
-                            <select name="s6" id="s6" class="form-control">
+                            <input type="text" name="times1" id="times1" class="datepicker" autocomplete="off" value="<?php echo $times1; ?>" placeholder="活動日期開始">　～　<input type="text" name="times2" id="times2" class="datepicker" autocomplete="off" value="<?php echo $times2; ?>" placeholder="活動日期結束">
+                            <select name="branch" id="branch" class="form-control">
                                 <option value="">請選擇會館</option>
                                 <?php
                                     $SQL = "Select * From branch_data Where admin_name<>'線上諮詢' Order By admin_SOrt";
@@ -204,7 +206,7 @@
                                     $rs->execute();
                                     $result=$rs->fetchAll(PDO::FETCH_ASSOC);                                
                                     foreach($result as $re){
-                                        if($_REQUEST["s6"] == $re["admin_name"]){
+                                        if($_REQUEST["branch"] == $re["admin_name"]){
                                             echo "<option value='".$re["admin_name"]."' selected>".$re["admin_name"]."</option>";     
                                         }else{
                                             echo "<option value='".$re["admin_name"]."'>".$re["admin_name"]."</option>";     

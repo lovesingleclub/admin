@@ -17,6 +17,7 @@
 
     // 接收值
     $vst = SqlFilter($_REQUEST["vst"],"tab");
+    $s99 = SqlFilter($_REQUEST["s99"],"int");
 
     // 發信(未完成)
     if($_REQUEST["st"] == "remail"){

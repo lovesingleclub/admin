@@ -22,6 +22,7 @@
 
     // 接收值
     $vst = SqlFilter($_REQUEST["vst"],"tab");
+    $s99 = SqlFilter($_REQUEST["s99"],"int");
 
     if( $_REQUEST["a1"] != ""){ 
         $kt1 = SqlFilter($_REQUEST["a1"],"int") . "/" . SqlFilter($_REQUEST["a2"],"int") . "/1 00:01";

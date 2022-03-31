@@ -12,6 +12,26 @@
     require_once("./include/_top.php");
     require_once("./include/_sidebar.php");
 
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+    setlocale(LC_ALL, "zh_CN");
+    if($_REQUEST["st"] == "upload"){        
+        if ($_FILES['fileToUpload']['error'] === UPLOAD_ERR_OK){            
+            $ext = pathinfo($_FILES["fileToUpload"]["name"], PATHINFO_EXTENSION); //附檔名
+            if($ext != "csv"){
+                echo "格式錯誤";
+                exit();
+            }    
+            $urlpath = "temp_excel/";
+            $fileName = date("Y").date("n").date("j").date("H").date("i").date("s")."_temp_".rand(1,999).".".$ext; //檔名
+            move_uploaded_file($_FILES["fileToUpload"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
+            reURL("ad_cheers_check_excel.php?n=".$fileName);
+        }else{
+            call_alert("匯入失敗。","ad_cheers_check.php",0);
+        }
+    }
 
 ?>
 

@@ -1,6 +1,150 @@
 <?php
-require("./include/_top.php");
-require("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：ad_mem_action_re_day.php
+    //後台對應位置：管理系統/活動明細表/每日活動紀錄
+    //改版日期：2022.3.23
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar.php");
+
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+    // 接收值
+    $vst = SqlFilter($_REQUEST["vst"],"tab");
+
+    // 日期
+    if($_REQUEST["times1"] != "" && $_REQUEST["times2"] != ""){
+        if($_REQUEST["times1"] > $_REQUEST["times2"]){
+            call_alert("日期請由小到大選擇",0,0);
+        }
+        $times1 = $_REQUEST["times1"];
+        $times1_1 = $_REQUEST["times1"]." 00:00";
+        $times2 = $_REQUEST["times2"];
+        $times2_1 = $_REQUEST["times2"]." 23:59";
+    }
+
+    $default_sql_num = 500;
+    if($_REQUEST["vst"] == "full"){
+        $sqlv = "*";
+        $sqlv2 = "count(acre_auto)";
+    }else{
+        $sqlv = "top ".$default_sql_num." *";
+        $sqlv2 = "count(acre_auto)";
+    }
+
+    switch($_SESSION["MM_UserAuthorization"]){
+        case "admin":
+            $sqls2 = "SELECT ".$sqlv2." as total_size FROM ac_data_re Where 1=1";
+            if($_REQUEST["branch"] != ""){
+                $branch = SqlFilter($_REQUEST["branch"],"tab");
+                $sqlss = $sqlss . " and all_branch like '%" . str_replace("'", "''",$branch) . "%'";
+                $sqlss2 = $sqlss2 . " and all_branch like '%" . str_replace("'", "''",$branch) . "%'";
+            }
+            break;
+        case "branch":
+        case "action":
+        case "love":
+        case "pay":
+            $p_branch = $_SESSION["branch"];
+            $sqls2 = "SELECT ".$sqlv2." as total_size FROM ac_data_re Where all_branch= '".$p_branch."'";
+            break;
+    }
+
+    if(chkDate($times1_1) && chkDate($times2_1)){
+        if($times1_1 > $times2_1){
+            call_alert("結束日期不能大於起始日期。", 0, 0);
+        }
+        $sqlss = $sqlss . " and acre_sign between '".$times1_1."' and '".$times2_1."'";
+        $sqlss2 = $sqlss2 . " and acre_time_del between '".$times1_1."' and '".$times2_1."'";
+    }
+
+    //計算總筆數
+    $sqls2 = $sqls2 . $sqlss;
+    $rs = $SPConn->prepare($sqls2);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);                    
+    if($result){
+        $total_size =  $result["total_size"];
+        if($_REQUEST["vst"] == "full"){            
+            $total_sizen = $total_size . "　<a href='?vst=n'>[查看前五百筆]</a>";
+        }else{            
+            if($total_size > 500){
+                $total_size = 500;
+            }
+            $total_sizen = $total_size . "　<a href='?vst=full'>[查看完整清單]</a>";
+        }
+    }else{
+        $total_size = 0;
+    }
+
+    $tPage = 1; //目前頁數
+    $tPageSize = 20; //每頁幾筆
+    if ( $_REQUEST["tPage"] > 1 ){ $tPage = $_REQUEST["tPage"];}
+    $tPageTotal = ceil(($total_size/$tPageSize)); //總頁數
+    if ( $tPageSize*$tPage < $total_size ){
+        $page2 = 20;
+    }else{
+        $page2 = (20-(($tPageSize*$tPage)-$total_size));
+    }
+  
+    switch($_SESSION["MM_UserAuthorization"]){
+        case "admin":
+            $sqls = "SELECT ".$sqlv." FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM ac_data_re Where 1=1";
+            $sqls3 = "SELECT * FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM ac_data_re Where acre_ck2 = 2";
+            $sumsql1 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where 1=1";
+            $sumsql2 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay2 > 0";
+            $sumsql3 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay2 < 0";
+            $sumsql4 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '保證金'";
+            $sumsql5 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '刷卡'";
+            $sumsql6 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '匯款'";
+            $sumsql7 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '活動卷'";
+            $sumsql8 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '現金'";
+            $sumsql9 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_ck2 = 2";
+            $sumsql10 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '抵用卷'";
+            $sumsql11 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '新抵用卷'";
+            break;
+        case "branch":
+        case "action":
+        case "love":
+        case "pay":
+            $p_branch = $_SESSION["branch"];
+            $sqls = "SELECT ".$sqlv." FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM ac_data_re Where all_branch= '".$p_branch."'";
+            $sqls3 = "SELECT * FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM ac_data_re Where acre_ck2 = 2 and all_branch = '".$p_branch."'";
+            $sumsql1 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where all_branch = '".$p_branch."'";
+            $sumsql2 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay2 > 0 and all_branch = '".$p_branch."'";
+            $sumsql3 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay2 < 0 and all_branch = '".$p_branch."'";
+            $sumsql4 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '保證金' and all_branch = '".$p_branch."'";
+            $sumsql5 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '刷卡' and all_branch = '".$p_branch."'";
+            $sumsql6 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '匯款' and all_branch = '".$p_branch."'";
+            $sumsql7 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '活動卷' and all_branch = '".$p_branch."'";
+            $sumsql8 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '現金' and all_branch = '".$p_branch."'";
+            $sumsql9 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_ck2 = 2 and all_branch = '".$p_branch."'";
+            $sumsql10 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '抵用卷' and all_branch = '".$p_branch."'";
+            $sumsql11 = "SELECT sum(acre_pay2) as acre_pay2_total FROM ac_data_re Where acre_pay = '新抵用卷' and all_branch = '".$p_branch."'";
+            break;
+    }
+
+    // sql
+    $sqls = $sqls . $sqlss . " order by acre_auto desc ) t1 order by acre_auto ) t2 order by acre_auto desc";
+    $sqls3 = $sqls3 . $sqlss2 . " order by acre_auto desc ) t1 order by acre_auto ) t2 order by acre_auto desc";
+    $sumsql1 = $sumsql1 . $sqlss;
+    $sumsql2 = $sumsql2 . $sqlss;
+    $sumsql3 = $sumsql3 . $sqlss;
+    $sumsql4 = $sumsql4 . $sqlss;
+    $sumsql5 = $sumsql5 . $sqlss;
+    $sumsql6 = $sumsql6 . $sqlss;
+    $sumsql7 = $sumsql7 . $sqlss;
+    $sumsql8 = $sumsql8 . $sqlss;
+    $sumsql9 = $sumsql9 . $sqlss2;
+    $sumsql10 = $sumsql10 . $sqlss;
+    $sumsql11 = $sumsql11 . $sqlss;
 ?>
 
 <!-- MIDDLE -->
@@ -21,8 +165,8 @@ require("./include/_sidebar.php");
         <div class="panel panel-default">
             <div class="panel-heading">
                 <span class="title elipsis">
-                    <strong>每日活動紀錄 - 數量：33　<a href="?vst=full">[查看完整清單]</a></strong> <!-- panel title -->
-                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="btn btn-info" onclick="Mars_popup('ad_mem_action_re_day_print.php?s6=&acre_sign1=&acre_sign2=','','scrollbars=yes,location=yes,status=yes,menubar=yes,resizable=yes,width=690,height=600,top=10,left=10');" value="列印本頁">
+                    <strong>每日活動紀錄 - 數量：<?php echo $total_sizen; ?></strong> <!-- panel title -->
+                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="button" class="btn btn-info" onclick="Mars_popup('ad_mem_action_re_day_print.php?branch=<?php echo SqlFilter($_REQUEST['branch'],'tab'); ?>&times1=<?php echo SqlFilter($_REQUEST['times1'],'tab'); ?>&times2=<?php echo SqlFilter($_REQUEST['times2'],'tab'); ?>','','scrollbars=yes,location=yes,status=yes,menubar=yes,resizable=yes,width=690,height=600,top=10,left=10');" value="列印本頁">
                 </span>
             </div>
 
@@ -44,28 +188,44 @@ require("./include/_sidebar.php");
                                     </ul>
                                 </div>　
                             </span>　
-                            <select name="s6" id="s6" style="width:140px;">
+                            <select name="branch" id="branch" style="width:140px;">
                                 <option value="">請選擇會館</option>
-                                <option value="台北">台北</option>
-                                <option value="桃園">桃園</option>
-                                <option value="新竹">新竹</option>
-                                <option value="台中">台中</option>
-                                <option value="台南">台南</option>
-                                <option value="高雄">高雄</option>
-                                <option value="八德">八德</option>
-                                <option value="約專">約專</option>
-                                <option value="迷你約">迷你約</option>
-                                <option value="總管理處">總管理處</option>
-                                <option value="好好玩旅行社">好好玩旅行社</option>
+                                <?php
+                                    $SQL = "Select * From branch_data Where admin_name<>'線上諮詢' Order By admin_SOrt";
+                                    $rs = $SPConn->prepare($SQL);
+                                    $rs->execute();
+                                    $result=$rs->fetchAll(PDO::FETCH_ASSOC);                                
+                                    foreach($result as $re){
+                                        if($branch == $re["admin_name"]){
+                                            echo "<option value='".$re["admin_name"]."' selected>".$re["admin_name"]."</option>";  
+                                        }else{
+                                            echo "<option value='".$re["admin_name"]."'>".$re["admin_name"]."</option>";  
+                                        }                                                                                        
+                                    }                                           
+                                ?>
                             </select>
                             報名日期：
-                            <input type="text" name="t1" id="t1" class="datepicker" autocomplete="off" placeholder="時間區間" value=""> ~ <input type="text" name="t2" id="t2" class="datepicker" autocomplete="off" placeholder="時間區間" value="">
+                            <input type="text" name="times1" id="times1" class="datepicker" autocomplete="off" placeholder="時間區間" value="<?php echo $times1 ?>"> ~ <input type="text" name="times2" id="times2" class="datepicker" autocomplete="off" placeholder="時間區間" value="<?php echo $times2 ?>">
 
                             <input type="submit" value="送出" class="btn btn-default">
                         </p>
                         <p>
+                            <?php 
+                                $rs = $SPConn->prepare($sumsql2);
+                                $rs->execute();
+                                $result = $rs->fetch(PDO::FETCH_ASSOC);
+                                if($result){
+                                    $sumresu2 = round($result["acre_pay2_total"]);
+                                }
 
-                            （收入：21501元）（支出：0元）
+                                $rs = $SPConn->prepare($sumsql3);
+                                $rs->execute();
+                                $result = $rs->fetch(PDO::FETCH_ASSOC);
+                                if($result){
+                                    $sumresu3 = round($result["acre_pay2_total"]);
+                                }
+                            ?>
+                            （收入：<?php echo $sumresu2; ?>元）（支出：<?php echo $sumresu3; ?>元）
                         </p>
                     </form>
                 </div>
@@ -82,382 +242,215 @@ require("./include/_sidebar.php");
                             <td width="7%">處理秘書</td>
                             <td width="5%">狀態</td>
                         </tr>
-
-                        <tr>
-                            <td align="center">2020/11/13 下午 04:04:00</td>
-                            <td align="center">2020/11/15 下午 02:00:00(好好玩旅行社)5565百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">楊富瑄(C220541374)<br>(1971/1/27 , 0927290818)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">699</td>
-                            <td align="center">11/15 #7766*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/11/13 上午 09:43:00</td>
-                            <td align="center">2020/11/15 下午 02:00:00(好好玩旅行社)5565百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center"></td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">699</td>
-                            <td align="center">11/15 #5473*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/11/13 上午 09:43:00</td>
-                            <td align="center">2020/11/15 下午 02:00:00(好好玩旅行社)5565百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">郭乃瑜(Y220042668)<br>(1972/3/13 , 0937182269)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">699</td>
-                            <td align="center">11/15 #6229*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/11/13 上午 09:41:00</td>
-                            <td align="center">2020/11/15 下午 02:00:00(好好玩旅行社)5565百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">謝寶文(F122087945)<br>(1967/9/28 , 0975923318)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">690</td>
-                            <td align="center">11/15 #0708*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/11/13 上午 09:41:00</td>
-                            <td align="center">2020/11/15 下午 02:00:00(好好玩旅行社)5565百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">董建華(F120787184)<br>(1966/2/24 , 0975068076)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">690</td>
-                            <td align="center">11/15 現場付費</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/11/13 上午 09:40:00</td>
-                            <td align="center">2020/11/15 下午 02:00:00(好好玩旅行社)5565百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">高明煌(Y120063656)<br>(1967/8/14 , 0935935728)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">690</td>
-                            <td align="center">11/15 #1317*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/27 下午 01:50:00</td>
-                            <td align="center">2020/10/28 下午 07:00:00(好好玩旅行社)六年級百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">林宏銘(G120159172)<br>(1973/8/24 , 0920311889)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">999</td>
-                            <td align="center">10/28 現場付費</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/27 下午 01:49:00</td>
-                            <td align="center">2020/10/28 下午 07:00:00(好好玩旅行社)六年級百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">許雅芳(A228390260)<br>(1980/12/29 , 0953036487)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">399</td>
-                            <td align="center">10/28 #0817*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/27 下午 01:49:00</td>
-                            <td align="center">2020/10/28 下午 07:00:00(好好玩旅行社)六年級百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">林佳穎(A225634274)<br>(1984/11/14 , 0912582155)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">399</td>
-                            <td align="center">10/28 #1975*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/27 下午 01:48:00</td>
-                            <td align="center">2020/10/28 下午 07:00:00(好好玩旅行社)六年級百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">楊雅婷(S222389259)<br>(1978/11/4 , 0910811942)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">399</td>
-                            <td align="center">10/28 #5309*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/27 下午 01:46:00</td>
-                            <td align="center">2020/10/28 下午 07:00:00(好好玩旅行社)六年級百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center"></td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">999</td>
-                            <td align="center">10/28 #4439*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/27 下午 01:45:00</td>
-                            <td align="center">2020/10/28 下午 07:00:00(好好玩旅行社)六年級百萬靠譜優質男專屬<br>
-
-                            </td>
-
-                            <td align="center">陳威村(Q121362027)<br>(1973/12/5 , 0920813505)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">999</td>
-                            <td align="center">10/28 #9032*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/8 下午 05:00:00</td>
-                            <td align="center">2020/10/7 下午 07:00:00(好好玩旅行社)輕熟齡聯誼 專屬質感約會<br>
-
-                            </td>
-
-                            <td align="center">連日銘(F125865101)<br>(1983/9/13 , 0910370008)</td>
-                            <td align="center">（匯款）<font color="#FF0000" size="3">300</td>
-                            <td align="center">10/07 #6016*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/8 下午 04:58:00</td>
-                            <td align="center">2020/10/7 下午 07:00:00(好好玩旅行社)輕熟齡聯誼 專屬質感約會<br>
-
-                            </td>
-
-                            <td align="center"></td>
-                            <td align="center">（匯款）<font color="#FF0000" size="3">999</td>
-                            <td align="center">非會員-蕭賢泰 10/07 #1834*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/8 下午 04:56:00</td>
-                            <td align="center">2020/10/7 下午 07:00:00(好好玩旅行社)輕熟齡聯誼 專屬質感約會<br>
-
-                            </td>
-
-                            <td align="center"></td>
-                            <td align="center">（匯款）<font color="#FF0000" size="3">999</td>
-                            <td align="center">非會員-陳怡平 10/07 #8294*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/10/8 上午 09:27:00</td>
-                            <td align="center">2020/10/7 下午 07:00:00(好好玩旅行社)輕熟齡聯誼 專屬質感約會<br>
-
-                            </td>
-
-                            <td align="center">楊琰琛(E122513654)<br>(1977/12/7 , 0926275129)</td>
-                            <td align="center">（現金）<font color="#FF0000" size="3">300</td>
-                            <td align="center"></td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/9/28 上午 11:25:00</td>
-                            <td align="center">2020/9/27 下午 02:00:00(總管理處)175UP挺拔歐爸專屬！精選3<br>
-
-                            </td>
-
-                            <td align="center">王馨誼(A228275473)<br>(1985/1/9 , 0936377508)</td>
-                            <td align="center">（匯款）<font color="#FF0000" size="3">399</td>
-                            <td align="center">09/27 #8824*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/9/28 上午 11:22:00</td>
-                            <td align="center">2020/9/27 下午 02:00:00(總管理處)175UP挺拔歐爸專屬！精選3<br>
-
-                            </td>
-
-                            <td align="center">林惠文(E222999496)<br>(1982/5/16 , 0988253652)</td>
-                            <td align="center">（匯款）<font color="#FF0000" size="3">399</td>
-                            <td align="center">09/27 #1702*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/9/28 上午 11:20:00</td>
-                            <td align="center">2020/9/27 下午 02:00:00(總管理處)175UP挺拔歐爸專屬！精選3<br>
-
-                            </td>
-
-                            <td align="center">蔡忻璇(A225794480)<br>(1987/1/17 , 0965073790)</td>
-                            <td align="center">（匯款）<font color="#FF0000" size="3">399</td>
-                            <td align="center">09/27 行動網</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td align="center">2020/9/28 上午 11:18:00</td>
-                            <td align="center">2020/9/27 下午 02:00:00(總管理處)175UP挺拔歐爸專屬！精選3<br>
-
-                            </td>
-
-                            <td align="center">李昱昇(H123284664)<br>(1984/10/6 , 0919334055)</td>
-                            <td align="center">（匯款）<font color="#FF0000" size="3">690</td>
-                            <td align="center">09/27 #3720*</td>
-                            <td align="center">總管理處</td>
-                            <td align="center">張利 Liz</td>
-                            <td align="center">
-                                已報名
-                            </td>
-                        </tr>
-
-                        </tbody>
+                    </thead>
+                    <tbody>
+                        <?php 
+                            $rs = $SPConn->prepare($sqls);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){
+                                foreach($result as $re){ ?>
+                                    <tr>
+                                        <td align="left"><?php echo changeDate($re["acre_sign"]); ?></td>
+                                        <td align="left">
+                                            <?php echo changeDate($re["acre_time2"]); ?>(<?php echo $re["acre_branch"]; ?>)<?php echo $re["acre_title"]; ?><br>
+                                            <?php 
+                                                if($re["acre_ck2"] == 1){
+                                                    echo "待轉時間(".Date_EN($re["acre_time_turn"],1).")";
+                                                }
+                                                if($re["acre_ck2"] == 2){
+                                                    echo "退費時間(".Date_EN($re["acre_time_del"],1).")";
+                                                }
+                                                if($re["acre_time_turn2"] != ""){
+                                                    echo "轉入時間(".Date_EN($re["acre_time_turn2"],1).")";
+                                                }
+                                            ?>
+                                        </td>
+                                        <td align="left">
+                                            <?php 
+                                                $rs = $SPConn->prepare("SELECT * FROM member_data Where mem_username='".$re["acre_user"]."'");
+                                                $rs->execute();
+                                                $result2 = $rs->fetch(PDO::FETCH_ASSOC);
+                                                if($result2){ 
+                                                    echo $result2["mem_name"]."(".$result2["mem_username"].")<br>(".$result2["mem_by"]."/".$result2["mem_bm"]."/".$result2["mem_bd"]." , ".$result2["mem_mobile"].")";
+                                                }
+                                            ?>                                           
+                                        </td>
+                                        <td align="left">（<?php echo $re["acre_pay"]; ?>）<font color="#FF0000" size="3"><?php echo $re["acre_pay2"]; ?></font></td>
+                                        <td align="left"><?php echo $re["acre_note"]; ?></td>
+                                        <td align="left"><?php echo $re["all_branch"]; ?></td>
+                                        <td align="left">
+                                            <?php 
+                                                if($re["all_single"] != ""){
+                                                    echo SingleName($re["all_single"],"normal");
+                                                }
+                                            ?>
+                                        </td>
+                                        <td align="left">
+                                            <?php 
+                                                if($re["acre_ck"] == 0){
+                                                    echo "已報名";
+                                                }else{
+                                                    if($re["acre_ck"] == 1){
+                                                        echo "參加";
+                                                    }else{
+                                                        echo "未參加";
+                                                    }
+                                                }
+                                            ?>
+                                        </td>
+                                    </tr>
+                                <?php }
+                            }else{
+                                echo "<tr><td colspan=9 height=200>目前沒有資料</td></tr>";
+                            }
+                        ?>  
+                    </tbody>
                 </table>
                 <table class="table table-striped table-bordered bootstrap-datatable">
-                    <tr bgcolor="#DA5893">
+                    <?php 
+                        $rs = $SPConn->prepare($sumsql1);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                            $sumresu1 = round($result["acre_pay2_total"]);
+                        }
 
+                        $rs = $SPConn->prepare($sumsql4);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                            $sumresu4 = round($result["acre_pay2_total"]);
+                        }
+
+                        $rs = $SPConn->prepare($sumsql5);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                            $sumresu5 = round($result["acre_pay2_total"]);
+                        }
+
+                        $rs = $SPConn->prepare($sumsql6);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                            $sumresu6 = round($result["acre_pay2_total"]);
+                        }
+
+                        $rs = $SPConn->prepare($sumsql7);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                            $sumresu7 = round($result["acre_pay2_total"]);
+                        }
+
+                        $rs = $SPConn->prepare($sumsql8);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                            $sumresu8 = round($result["acre_pay2_total"]);
+                        }
+
+                        $rs = $SPConn->prepare($sumsql9);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                            $sumresu9 = round($result["acre_pay2_total"]);
+                        }
+
+                        $rs = $SPConn->prepare($sumsql10);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                            $sumresu10 = round($result["acre_pay2_total"]);
+                        }
+
+                        $rs = $SPConn->prepare($sumsql11);
+                        $rs->execute();
+                        $result = $rs->fetch(PDO::FETCH_ASSOC);
+                        if($result){
+                            $sumresu11 = round($result["acre_pay2_total"]);
+                        }
+                    ?>
+                    <tr bgcolor="#DA5893">
                         <td width="15%">保証金：</font>
-                            <font size="2">0元</font>
+                            <font size="2"><?php echo $sumresu4; ?>元</font>
                             </font>
                         </td>
                         <td width="10%">刷卡：</font>
-                            <font size="2">0元</font>
+                            <font size="2"><?php echo $sumresu5; ?>元</font>
                             </font>
                         </td>
                         <td width="10%">匯款：</font>
-                            <font size="2">11840元</font>
+                            <font size="2"><?php echo $sumresu6; ?>元</font>
                             </font>
                         </td>
                         <td width="10%">活動卷：</font>
-                            <font size="2">0元</font>
+                            <font size="2"><?php echo $sumresu7; ?>元</font>
                             </font>
                         </td>
-                        <td width="10%">現金：<font size="2">9661元</font>
+                        <td width="10%">現金：<font size="2"><?php echo $sumresu8; ?>元</font>
                             </font>
                         </td>
                         <td width="10%">抵用卷：</font>
-                            <font size="2">0元</font>
+                            <font size="2"><?php echo $sumresu10; ?>元</font>
                             </font>
                         </td>
                         <td width="10%">新抵用卷：</font>
-                            <font size="2">0元</font>
+                            <font size="2"><?php echo $sumresu11; ?>元</font>
                             </font>
                         </td>
                         <td width="25%">總收入：</font>
-                            <font size="2">21501元</font>
+                            <font size="2"><?php echo ($sumresu1 - $sumresu7 - $sumresu4 + $sumresu9); ?>元</font>
                             </font>
                         </td>
                     </tr>
                 </table>
-                <tr>
-                    <td colspan=9 height=200>目前沒有資料</td>
-                </tr>
+                <?php 
+                    $rs = $SPConn->prepare($sqls3);
+                    $rs->execute();
+                    $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                    if($result){
+                        echo "<table class='table table-striped table-bordered bootstrap-datatable'>";
+                        foreach($result as $re){ ?>
+                            <tr>
+                                <td align="left"><?php echo changeDate($re["acre_sign"]); ?></td>
+                                <td align="left">
+                                    <?php echo $re["acre_time2"]; ?>(<?php echo $re["acre_branch"]; ?>)<?php echo $re["acre_title"]; ?><br>
+                                    <span class="c1">退費時間：<?php echo Date_EN($re["acre_time_del"],1); ?></span>
+                                </td>
+                                <td width=200  align="left">
+                                    <?php 
+                                        $rs = $SPConn->prepare("SELECT * FROM member_data Where mem_username='".$re["acre_user"]."'");
+                                        $rs->execute();
+                                        $result2 = $rs->fetch(PDO::FETCH_ASSOC);
+                                        if($result2){ 
+                                            echo $result2["mem_name"]."(".$result2["mem_username"].")<br>(".$result2["mem_by"]."/".$result2["mem_bm"]."/".$result2["mem_bd"]." , ".$result2["mem_mobile"].")";
+                                        }
+                                    ?>
+                                </td>
+                                <td align="left">（<?php echo $re["acre_pay"]; ?>）<font color="#FF0000" size="3"><?php echo $re["acre_pay2"]; ?></font></td>
+                                <td align="left"><?php echo $re["acre_note"]; ?></td>
+                                <td align="left"><?php echo $re["all_branch"]; ?></td>
+                                <td align="left">
+                                    <?php 
+                                        if($re["all_single"] != ""){
+                                            echo SingleName($re["all_single"],"normal");
+                                        }
+                                    ?>
+                                </td>
+                            </tr>
+                        <?php }
+                        echo "</table>";
+                    }else{
+                        echo "<table class='table table-striped table-bordered bootstrap-datatable'>";
+                        echo "<tr><td colspan=9 height=200>目前沒有資料</td></tr>";
+                        echo "</table>";
+                    }
+                ?>
             </div>
-            <div class="text-center">共 33 筆、第 1 頁／共 2 頁&nbsp;&nbsp;
-                <ul class='pagination pagination-md'>
-                    <li><a href=/ad_mem_action_re_day.php?topage=1>第一頁</a></li>
-                    <li class='active'><a href="#">1</a></li>
-                    <li><a href=/ad_mem_action_re_day.php?topage=2 class='text'>2</a></li>
-                    <li><a href=/ad_mem_action_re_day.php?topage=2 class='text' title='Next'>下一頁</a></li>
-                    <li><a href=/ad_mem_action_re_day.php?topage=2 class='text'>最後一頁</a></li>
-                    <li><select style="width:60px;height:34px;margin-left:5px;" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
-                            <option value="/ad_mem_action_re_day.php?topage=1" selected>1</option>
-                            <option value="/ad_mem_action_re_day.php?topage=2">2</option>
-                        </select></li>
-                </ul>
-            </div>
+            <!-- 頁碼 -->
+            <?php require_once("./include/_page.php"); ?>
 
         </div>
         <!--/span-->
@@ -475,10 +468,5 @@ require("./include/_bottom.php");
 
 <script type="text/javascript">
     $mtu = "ad_mem_action_re_list.";
-    $(function() {
-        $("#s6").on("change", function() {
-            personnel_get("s6", "s7");
 
-        });
-    });
 </script>
