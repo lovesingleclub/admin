@@ -1,4 +1,12 @@
 <?php
+$ip = $_SERVER["REMOTE_ADDR"];
+if ( $ip != "60.250.92.145" && $ip != "220.135.185.69" ){
+	echo "<script language=\"javascript\">" ;
+	echo "alert('無權限');";
+	echo "location.href='login.php';";
+	echo "</script>";
+	exit;
+}
 ini_set('session.gc_maxlifetime', 1800);	//session時間
 session_start();	//啟動 session
 //------------------------------------------------------------------------
