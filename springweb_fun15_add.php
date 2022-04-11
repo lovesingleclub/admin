@@ -1,8 +1,17 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：springweb_fun15_add.php
+    //後台對應位置：春天網站系統/戀愛講堂>新增/修改戀愛講堂
+    //改版日期：2022.4.11
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar.php");
+    
 ?>
 
 <!-- MIDDLE -->
