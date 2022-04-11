@@ -11,6 +11,29 @@
     require_once("./include/_function.php");
     require_once("./include/_top.php");
     require_once("./include/_sidebar.php");
+
+    // 刪除圖片功能(待測)
+    if($_REQUEST["st"] == "delpic"){
+        $urlpath = "upload_image/";
+        DelFile($urlpath.SqlFilter($_REQUEST["p"],"tab"));
+
+        $SQL = "select fullpic from ad_salon where ads_auto=".SqlFilter($_REQUEST["id"],"int");
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $fullpic = $result["fullpic"];
+            if($fullpic != ""){
+                if(stripos($fullpic,",") != false){
+                   $fullpic = $fullpic .",";
+                   $fullpic = str_replace(($_REQUEST["p"].","),"",$fullpic);
+                }else{
+                    $fullpic = NULL;
+                }
+
+            }
+        }
+    }
     
 ?>
 
