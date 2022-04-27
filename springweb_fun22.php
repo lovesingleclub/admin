@@ -1,8 +1,33 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：springweb_fun22.php
+    //後台對應位置：春天網站系統/首頁-文字設定
+    //改版日期：2022.4.27
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar.php");
+
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+
+    if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["funtourpm"] != "1"){
+        call_alert("您沒有查看此頁的權限。", "login.php", 0);
+    }
+
+    if($_REQUEST["st"] == "txtsave"){
+        if($_REQUEST["txt1"] != ""){
+            $txt1= SqlFilter($_REQUEST["txt1"],"tab");
+        }else{
+            $txt1 = NULL;
+        }
+    }
 ?>
 
 <!-- MIDDLE -->
