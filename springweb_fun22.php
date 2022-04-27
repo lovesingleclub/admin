@@ -27,6 +27,78 @@
         }else{
             $txt1 = NULL;
         }
+        $SQL = "SELECT * FROM webdata where types='mobile_index_banner_txt1'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $SQL = "UPDATE webdata SET d1='".$txt1."' where types='mobile_index_banner_txt1'";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }else{
+            $SQL = "INSERT INTO webdata (d1,types) VALUES ('".$txt1."','mobile_index_banner_txt1')";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }
+
+        if($_REQUEST["txt2"] != ""){
+            $txt2= SqlFilter($_REQUEST["txt2"],"tab");
+        }else{
+            $txt2 = NULL;
+        }
+        $SQL = "SELECT * FROM webdata where types='mobile_index_banner_txt2'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $SQL = "UPDATE webdata SET d1='".$txt2."' where types='mobile_index_banner_txt2'";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }else{
+            $SQL = "INSERT INTO webdata (d1,types) VALUES ('".$txt2."','mobile_index_banner_txt2')";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }
+
+        if($_REQUEST["txt3"] != ""){
+            $txt3= SqlFilter($_REQUEST["txt3"],"tab");
+        }else{
+            $txt3 = NULL;
+        }
+        $SQL = "SELECT * FROM webdata where types='mobile_index_banner_txt3'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $SQL = "UPDATE webdata SET d1='".$txt3."' where types='mobile_index_banner_txt3'";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }else{
+            $SQL = "INSERT INTO webdata (d1,types) VALUES ('".$txt3."','mobile_index_banner_txt3')";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }
+
+        if($_REQUEST["txt4"] != ""){
+            $txt4= SqlFilter($_REQUEST["txt4"],"tab");
+        }else{
+            $txt4 = NULL;
+        }
+        $SQL = "SELECT * FROM webdata where types='mobile_index_banner_txt4'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $SQL = "UPDATE webdata SET d1='".$txt4."' where types='mobile_index_banner_txt4'";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }else{
+            $SQL = "INSERT INTO webdata (d1,types) VALUES ('".$txt4."','mobile_index_banner_txt4')";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }
+
+        reURL("springweb_fun22.php");
     }
 ?>
 
@@ -55,17 +127,40 @@
                 <form method="post" action="?st=txtsave">
                     <table class="table table-striped table-bordered bootstrap-datatable">
                         <tbody>
-
+                            <?php 
+                                $SQL = "SELECT * FROM webdata where types in ('mobile_index_banner_txt1','mobile_index_banner_txt2','mobile_index_banner_txt3','mobile_index_banner_txt4')";
+                                $rs = $SPConn->prepare($SQL);
+                                $rs->execute();
+                                $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                                if($result){
+                                    foreach($result as $re){
+                                        switch($re["types"]){
+                                            case "mobile_index_banner_txt1":
+                                                $txt1 = $re["d1"];
+                                                break;
+                                            case "mobile_index_banner_txt2":
+                                                $txt2 = $re["d1"];
+                                                break;
+                                            case "mobile_index_banner_txt3":
+                                                $txt3 = $re["d1"];
+                                                break;
+                                            case "mobile_index_banner_txt4":
+                                                $txt4 = $re["d1"];
+                                                break;
+                                        }
+                                    }                                    
+                                }
+                            ?>
                             <tr>
                                 <td>首頁-上方Banner-文字</td>
-                                <td>大字：<input type="text" name="txt1" id="txt1" value="30年以上交友配對經驗">
-                                    <br>小字：<input type="text" name="txt2" id="txt2" value="逾100位顧問團隊，成就萬對幸福戀情">
+                                <td>大字：<input type="text" name="txt1" id="txt1" value="<?php echo $txt1; ?>">
+                                    <br>小字：<input type="text" name="txt2" id="txt2" value="<?php echo $txt2; ?>">
                                 </td>
                             </tr>
                             <tr>
                                 <td>首頁-中間Banner-文字</td>
-                                <td>大字：<input type="text" name="txt3" id="txt3" value="約會專家來了！">
-                                    <br>小字：<input type="text" name="txt4" id="txt4" value="穿越不同交友平台，約到最適合的情人">
+                                <td>大字：<input type="text" name="txt3" id="txt3" value="<?php echo $txt3; ?>">
+                                    <br>小字：<input type="text" name="txt4" id="txt4" value="<?php echo $txt4; ?>">
                                 </td>
                             </tr>
                             <tr>
