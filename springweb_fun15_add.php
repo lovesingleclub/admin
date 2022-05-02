@@ -9,8 +9,87 @@
 
     require_once("_inc.php");
     require_once("./include/_function.php");
+    // ajax
+    if($_REQUEST["st"] == "reload_div"){
+        $SQL = "select fullpic from ad_salon where ads_auto=".SqlFilter($_REQUEST["id"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $fullpic = $result["fullpic"];
+            if($fullpic != ""){
+                if(stripos($fullpic,",") != false){
+                    foreach(explode(",",$fullpic) as $pic){
+                        echo "<p style='height:22px'>http://www.springclub.com.tw/upload_image/".$pic."　<a href='#delpic' onclick=\"del_pic('".$pic."')\">刪</a>　<a href='http://www.springclub.com.tw/upload_image/".$pic."' class='fancybox'>圖</a></p>".PHP_EOL;
+                    }
+                }else{
+                    echo "<p style='height:22px'>http://www.springclub.com.tw/upload_image/".$fullpic."　<a href='#delpic' onclick=\"del_pic('".$fullpic."')\">刪</a>　<a href='http://www.springclub.com.tw/upload_image/".$fullpic."' class='fancybox'>圖</a></p>".PHP_EOL;
+                }
+            }
+        }
+        exit();
+    }
+    
+    // ajax上傳圖檔2(待測)
+    if($_REQUEST["st"] == "upload2"){
+        $id = SqlFilter($_REQUEST["id"],"int");
+        if ($_FILES['fileupload2']['error'] === UPLOAD_ERR_OK){
+            $urlpath = "upload_image/"; //儲存路徑
+            $ext = pathinfo($_FILES["fileupload2"]["name"], PATHINFO_EXTENSION); //附檔名      
+            $fileName = date("Y").date("n").date("j").date("H").date("i").date("s")."_lovesalon_".rand(1,1000).".".$ext; //檔名
+            move_uploaded_file($_FILES["fileupload2"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
+			
+			$SQL = "select * from ad_salon where ads_auto=".$id."";
+			$rs = $SPConn->prepare($SQL);
+			$rs->execute();
+			$result = $rs->fetch(PDO::FETCH_ASSOC);
+			if($result){
+				$fullpic = $result["fullpic"];
+                if($fullpic != ""){
+                    // 圖檔名稱用','連接一起
+                    $SQL = "UPDATE ad_salon SET fullpic='".($fullpic.",".$fileName)."' where ads_auto=".SqlFilter($_REQUEST["id"],"int");
+                    $rs = $SPConn->prepare($SQL);
+			        $rs->execute();
+                }else{
+                    $SQL = "UPDATE ad_salon SET fullpic='".$fileName."' where ads_auto=".SqlFilter($_REQUEST["id"],"int");
+                    $rs = $SPConn->prepare($SQL);
+			        $rs->execute();
+                }
+            }
+
+			echo $id;        	        
+        }
+        exit(); 
+    }
+
+    // ajax上傳跟刪除圖檔(待測)
+    if($_REQUEST["st"] == "upload"){
+        $ads_pic = SqlFilter($_REQUEST["ads_pic"],"tab");
+        if ($_FILES['fileupload']['error'] === UPLOAD_ERR_OK){
+            $urlpath = "upload_image/"; //儲存路徑
+            $ext = pathinfo($_FILES["fileupload"]["name"], PATHINFO_EXTENSION); //附檔名      
+            $fileName = date("Y").date("n").date("j").date("H").date("i").date("s")."_springweb_fun15_".rand(1,1000).".".$ext; //檔名
+            move_uploaded_file($_FILES["fileupload"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
+			
+			if($fileName != "" && $ads_pic != ""){
+                DelFile("upload_image/".$ads_pic);
+            }
+
+			echo $fileName;        	        
+        }
+        exit(); 
+    }
     require_once("./include/_top.php");
-    require_once("./include/_sidebar.php");
+    require_once("./include/_sidebar_spring.php");
+
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+
+    if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["funtourpm"] != "1"){
+        call_alert("您沒有查看此頁的權限。", "login.php", 0);
+    }
 
     // 刪除圖片功能(待測)
     if($_REQUEST["st"] == "delpic"){
@@ -30,13 +109,72 @@
                 }else{
                     $fullpic = NULL;
                 }
-
+                if(substr($fullpic,-1) == ","){
+                    $fullpic = substr($fullpic,0,-1);
+                }
+                $SQL = "UPDATE ad_salon SET fullpic='".$fullpic."' where ads_auto=".SqlFilter($_REQUEST["id"],"int");
+                $rs = $SPConn->prepare($SQL);
+                $rs->execute();
             }
         }
     }
-    
+
+    $ads_note = str_replace("<br>",PHP_EOL,$_REQUEST["ads_note"]);
+    $ads_note = str_replace("<!DOCTYPE html><html><head></head><body>", "",$ads_note);
+    $ads_note = str_replace("</body></html>", "",$ads_note);
+
+    // 新增
+    if($_REQUEST["acts"] == "ad"){
+        $SQL = "select top 1 ads_desc from ad_salon order by ads_desc desc";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $ltd = $result["ads_desc"] + 1;
+        }
+        $SQL = "INSERT INTO ad_salon (ads_kind,ads_title,ads_tag,ads_teacher,ads_note,ads_pic1,ads_desc,ads_showtime) VALUES ('". SqlFilter($_REQUEST["ads_kind"],"tab") ."','". SqlFilter($_REQUEST["ads_title"],"tab") ."','". SqlFilter($_REQUEST["ads_tag"],"tab") ."','". SqlFilter($_REQUEST["ads_teacher"],"tab") ."','". $ads_note."','".SqlFilter($_REQUEST["ads_pic"],"tab")."',".$ltd.",'".SqlFilter($_REQUEST["ads_showtime"],"tab")."')";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        
+        reURL("springweb_fun15.php");
+    }
+
+    // 更新
+    if($_REQUEST["acts"] == "up"){
+        $SQL = "update ad_salon set ads_kind = '". SqlFilter($_REQUEST["ads_kind"],"tab") ."',ads_title = '". SqlFilter($_REQUEST["ads_title"],"tab") ."',ads_tag = '". SqlFilter($_REQUEST["ads_tag"],"tab") ."',ads_teacher = '". SqlFilter($_REQUEST["ads_teacher"],"tab") ."', ads_pic1='". SqlFilter($_REQUEST["ads_pic"],"tab") ."'";
+        $SQL = $SQL . ",ads_note='".$ads_note ."',ads_showtime='".SqlFilter($_REQUEST["ads_showtime"],"tab")."' where ads_auto = ". SqlFilter($_REQUEST["pid"],"int") ."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        
+        reURL("springweb_fun15.php");
+    }
+
+    $nows = date("Y/m/d H:i:s");
+    if($_REQUEST["act"] == "up" && $_REQUEST["id"] != 0){
+        $SQL = "Select * from ad_salon where ads_auto = ".SqlFilter($_REQUEST["id"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $ads_kind = $result["ads_kind"];
+            $ads_title = $result["ads_title"];
+            $ads_tag = $result["ads_tag"];
+            $ads_teacher = $result["ads_teacher"];     
+            $ads_pic = $result["ads_pic1"];     
+            $ads_note = $result["ads_note"];
+            $ads_showtime = $result["ads_showtime"];
+	        $nows = $result["ads_time"];
+            if($ads_note != ""){
+                $ads_note = str_replace("<br>",PHP_EOL,$ads_note);
+            }
+        }
+    }
 ?>
 
+<link rel="stylesheet" href="css/jquery.fileupload.css">
+<link rel="stylesheet" href="css/jquery.fileupload-ui.css">
+<noscript><link rel="stylesheet" href="css/jquery.fileupload-noscript.css"></noscript>
+<noscript><link rel="stylesheet" href="css/jquery.fileupload-ui-noscript.css"></noscript>
 <!-- MIDDLE -->
 <section id="middle">
     <!-- page title -->
@@ -65,42 +203,49 @@
                         <tbody>
                             <tr>
                                 <td width="150" align="left" valign="middle">分類</td>
-                                <td><select name="ads_kind" id="ads_kind">
-                                        <option value="愛情先修班">愛情先修班</option>
-                                        <option value="戀愛補習班">戀愛補習班</option>
-                                        <option value="好想談戀愛">好想談戀愛</option>
-                                        <option value="男女大不同">男女大不同</option>
-                                        <option value="專家學者說">專家學者說</option>
-                                        <option value="幸福幫幫忙">幸福幫幫忙</option>
-                                        <option value="就是要幸福">就是要幸福</option>
-                                    </select></td>
+                                <td>
+                                    <select name="ads_kind" id="ads_kind">
+                                        <option value="愛情先修班"<?php if($ads_kind == "愛情先修班") echo " selected"; ?>>愛情先修班</option>
+                                        <option value="戀愛補習班"<?php if($ads_kind == "戀愛補習班") echo " selected"; ?>>戀愛補習班</option>
+                                        <option value="好想談戀愛"<?php if($ads_kind == "好想談戀愛") echo " selected"; ?>>好想談戀愛</option>
+                                        <option value="男女大不同"<?php if($ads_kind == "男女大不同") echo " selected"; ?>>男女大不同</option>
+                                        <option value="專家學者說"<?php if($ads_kind == "專家學者說") echo " selected"; ?>>專家學者說</option>
+                                        <option value="幸福幫幫忙"<?php if($ads_kind == "幸福幫幫忙") echo " selected"; ?>>幸福幫幫忙</option>
+                                        <option value="就是要幸福"<?php if($ads_kind == "就是要幸福") echo " selected"; ?>>就是要幸福</option>
+                                    </select>
+                                </td>
                             </tr>
                             <tr>
                             <tr>
                                 <td width="150" align="left" valign="middle">標題</td>
-                                <td><input name="ads_title" id="ads_title" value="" style="width:60%;" class="form-control" required></td>
+                                <td><input name="ads_title" id="ads_title" value="<?php echo $ads_title; ?>" style="width:60%;" class="form-control" required></td>
                             </tr>
                             <tr>
                                 <td width="150" align="left" valign="middle">TAG(分隔符號|)</td>
-                                <td><input name="ads_tag" id="ads_tag" value="" class="form-control" style="width:60%;"></td>
+                                <td><input name="ads_tag" id="ads_tag" value="<?php echo $ads_tag; ?>" class="form-control" style="width:60%;"></td>
                             </tr>
                             <tr>
                                 <td width="150" align="left" valign="middle">教師</td>
-                                <td><input name="ads_teacher" id="ads_teacher" class="form-control" value=""></td>
+                                <td><input name="ads_teacher" id="ads_teacher" class="form-control" value="<?php echo $ads_teacher; ?>"></td>
                             </tr>
                             <tr>
                                 <td width="150" align="left" valign="middle">日期</td>
-                                <td colspan=3><input name="ads_showtime" id="ads_showtime" value="" class="datepicker" autocomplete="off"></td>
+                                <td colspan=3><input name="ads_showtime" id="ads_showtime" value="<?php echo Date_EN($ads_showtime,1); ?>" class="datepicker" autocomplete="off"></td>
                             </tr>
                             <tr>
                                 <td align="left" valign="middle">建立時間</td>
-                                <td>2021/10/22 下午 02:40:53</td>
+                                <td><?php echo changeDate($nows); ?></td>
                             </tr>
                             <td align="left" valign="middle">上傳圖檔</td>
                             <td>
-
                                 <div id="img_div">
-
+                                    <?php 
+                                        if($ads_pic != ""){
+                                            echo "<a href='upload_image/". $ads_pic ."' class='fancybox'><img src='upload_image/". $ads_pic ."' width=250 border=0></a>";
+                                        }else{
+                                            echo "";
+                                        }
+                                    ?>
                                 </div>
                                 <div>
                                     <span class="btn btn-danger fileinput-button"><span>上傳檔案</span><input id="file_uploads1" type="file" class="fileupload" name="fileupload"></span>
@@ -113,17 +258,27 @@
                             </tr>
                             <tr>
                                 <td align="left" valign="middle">內文</td>
-                                <td><textarea name="ads_note" class="editor" style="width:80%;height:350px;"></textarea></td>
+                                <td><textarea name="ads_note" class="editor" style="width:80%;height:350px;"><?php echo $ads_note; ?></textarea></td>
                             </tr>
                             <tr>
-                                <td colspan=2 align="center"><input name="ads_pic" id="ads_pic" type="hidden" value=""><input name="acts" id="acts" type="hidden" value="ad"><input name="pid" type="hidden" id="pid" value="">
+                                <td colspan=2 align="center"><input name="ads_pic" id="ads_pic" type="hidden" value="<?php echo $ads_pic; ?>"><input name="acts" id="acts" type="hidden" value="<?php echo SqlFilter($_REQUEST["act"],"tab"); ?>"><input name="pid" type="hidden" id="pid" value="<?php echo SqlFilter($_REQUEST["id"],"int"); ?>">
                                     <input type="submit" value="確認送出" class="btn btn-info" style="width:50%;">
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </form>
-
+                <?php 
+                    if($_REQUEST["id"] != ""){ ?>
+                        <div>
+                            <div id="reload_showtopdiv"></div>
+                            <div>
+                                <span class="btn btn-danger fileinput-button"><span>內文用圖片上傳</span><input id="file_uploads2" type="file" class="fileupload" name="fileupload2"></span>
+                                <div id="progress" class="progress progress-striped" style="display:none"><div class="bar progress-bar progress-bar-lovepy"></div></div>
+                            </div>
+                        </div>
+                    <?php }
+                ?>
             </div>
         </div>
         <!--/span-->
@@ -160,7 +315,7 @@ require_once("./include/_bottom.php");
             url: 'springweb_fun15_add.php',
             data: {
                 st: "delpic",
-                id: '',
+                id: '<?php echo SqlFilter($_REQUEST["id"],"int"); ?>',
                 p: p
             },
             error: function(xhr) {
@@ -179,7 +334,7 @@ require_once("./include/_bottom.php");
             url: 'springweb_fun15_add.php',
             data: {
                 st: "reload_div",
-                id: ''
+                id: '<?php echo SqlFilter($_REQUEST["id"],"int"); ?>'
             },
             error: function(xhr) {
                 alert('Ajax request 發生錯誤1x');
@@ -199,7 +354,7 @@ require_once("./include/_bottom.php");
         var $imgs = $file_uploads1.closest("span").find("#cimg").val();
 
         $file_uploads1.fileupload({
-                url: "springweb_fun15_add.php?st=upload&ads_pic=",
+                url: "springweb_fun15_add.php?st=upload&ads_pic=<?php echo $ads_pic; ?>",
                 type: "POST",
                 dropZone: $file_uploads1,
                 dataType: 'html',
@@ -250,7 +405,7 @@ require_once("./include/_bottom.php");
         var $imgs = $file_uploads2.closest("span").find("#cimg").val();
 
         $file_uploads2.fileupload({
-                url: "springweb_fun15_add.php?st=upload2&id=",
+                url: "springweb_fun15_add.php?st=upload2&id=<?php echo SqlFilter($_REQUEST["id"],"int"); ?>",
                 type: "POST",
                 dropZone: $file_uploads2,
                 dataType: 'html',

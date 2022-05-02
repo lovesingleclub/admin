@@ -1,8 +1,72 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：springweb_fun15.php
+    //後台對應位置：春天網站系統/戀愛講堂
+    //改版日期：2022.4.10
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar_spring.php");
+
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+
+    if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["funtourpm"] != "1"){
+        call_alert("您沒有查看此頁的權限。", "login.php", 0);
+    }
+
+    // 文章上移
+    if($_REQUEST["st"] == "up_line"){
+        $nowline = round(SqlFilter($_REQUEST["ad"],"int"));
+        $upline = $nowline+1;
+        $SQL = "update ad_salon set ads_desc=".$nowline." where ads_desc='".$upline."'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update ad_salon set ads_desc=".$upline." where ads_auto=".SqlFilter($_REQUEST["ads_auto"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+    }
+
+    // 文章下移
+    if($_REQUEST["st"] == "down_line"){
+        $nowline = round(SqlFilter($_REQUEST["ad"],"int"));
+        $upline = $nowline-1;
+        $SQL = "update ad_salon set ads_desc=".$nowline." where ads_auto=".$upline."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update ad_salon set ads_desc=".$upline." where ads_auto=".SqlFilter($_REQUEST["ads_auto"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+    }
+
+    // 刪除文章(有刪除圖片功能待測)
+    if($_REQUEST["st"] == "del"){
+        $SQL = "select ads_pic1 from ad_salon where ads_auto=".SqlFilter($_REQUEST["id"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            DelFile("upload_image/".$re["ads_pic1"]); //刪除圖片 
+        }
+
+        $SQL = "delete from ad_salon where ads_auto=".SqlFilter($_REQUEST["id"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+
+        reURL("win_close.php?m=刪除中.....");
+    }
+
+    if($_REQUEST["st"] == "sa"){
+        $SQL = "update ad_salon set index_show=".SqlFilter($_REQUEST["v"],"int")." where ads_auto=".SqlFilter($_REQUEST["t"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+    }
 ?>
 
 <!-- MIDDLE -->
@@ -40,60 +104,56 @@ require_once("./include/_sidebar.php");
                             <th width="30">精選</th>
                             <th width=60>操作</th>
                         </tr>
-
-                        <tr>
-                            <td><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=114&ads_auto=128"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2021/9/29</td>
-                            <td>愛情先修班</td>
-                            <td>交友APP滑得心好累？快到春天會館「約會專家」測驗你的戀愛力！</td>
-                            <td>&nbsp;圖一、2021想找個認真交友對象，婚友社春天會館推出交友軟體助單身男女脫單（圖片來源：U</td>
-                            <td>
-
-                                <a href="/upload_image/2021929113952_springweb_fun15_196.jpg" class='fancybox'>點我查看</a>
-
-                            </td>
-                            <td><input data-no-uniform="true" type="checkbox" id="128" class="show_check" checked></td>
-                            <td>
-                                <a href="springweb_fun15_add.php?act=up&id=128">編輯</a>
-                                <a href="javascript:Mars_popup2('springweb_fun15.php?st=del&id=128','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=up_line&ad=113&ads_auto=127"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=113&ads_auto=127"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2021/8/18</td>
-                            <td>專家學者說</td>
-                            <td>他是認真的嗎？正經系交友平台分享 3 招過濾不對的人 突破盲點不暈船！</td>
-                            <td>曖昧常是男女關係中，最充滿猜測、疑問的階段。爬文PTT男女版、問遍親友意見、星座塔羅，乃至求神拜廟，</td>
-                            <td>
-
-                                <a href="/upload_image/202181815157_springweb_fun15_170.jpg" class='fancybox'>點我查看</a>
-
-                            </td>
-                            <td><input data-no-uniform="true" type="checkbox" id="127" class="show_check" checked></td>
-                            <td>
-                                <a href="springweb_fun15_add.php?act=up&id=127">編輯</a>
-                                <a href="javascript:Mars_popup2('springweb_fun15.php?st=del&id=127','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=up_line&ad=112&ads_auto=126"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=112&ads_auto=126"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2021/7/21</td>
-                            <td>愛情先修班</td>
-                            <td>Line的聊天互動技巧</td>
-                            <td>讓初認識的他/她&nbsp;在私聊中留下美好的點滴印象你知道談話聊天也是需要練習的嗎！其實只要跨出第</td>
-                            <td>
-
-                                <a href="/upload_image/2021721145957_springweb_fun15_701.jpeg" class='fancybox'>點我查看</a>
-
-                            </td>
-                            <td><input data-no-uniform="true" type="checkbox" id="126" class="show_check" checked></td>
-                            <td>
-                                <a href="springweb_fun15_add.php?act=up&id=126">編輯</a>
-                                <a href="javascript:Mars_popup2('springweb_fun15.php?st=del&id=126','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
+                        <?php 
+                            $SQL = "SELECT * FROM ad_salon order by ads_desc desc";
+                            $rs = $SPConn->prepare($SQL);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){
+                                $ii = 0;
+                                foreach($result as $re){
+                                    if($ii == 0){
+                                        $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                    }else{
+                                        $uahref = "?st=up_line&ad=".$re["ads_desc"]."&ads_auto=".$re["ads_auto"];
+                                    }                                   
+                                    if($ii == count($result)-1){
+                                        $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                    }else{
+                                        $dahref = "?st=down_line&ad=".$re["ads_desc"]."&ads_auto=".$re["ads_auto"];
+                                    } ?>
+                                    <tr>
+                                        <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>			    
+                                        <td><?php echo Date_EN($re["ads_showtime"],1); ?></td>
+                                        <td><?php echo $re["ads_kind"]; ?></td>
+                                        <td><?php echo $re["ads_title"]; ?></td>
+                                        <td><?php echo mb_substr(RemoveHTML($re["ads_note"]),0,50,"utf-8"); ?></td>
+                                        <td>
+                                            <?php 
+                                                if($re["ads_pic1"] != ""){ ?>
+                                                    <a href="/upload_image/<?php echo $re["ads_pic1"]; ?>" class='fancybox'>點我查看</a>
+                                                <?php }
+                                            ?>                                
+                                        </td>
+                                        <td>
+                                            <?php 
+                                                if($re["index_show"] == 1){
+                                                    echo "<input data-no-uniform='true' type='checkbox' id='".$re["ads_auto"]."' class='show_check' checked>";
+                                                }else{
+                                                    echo "<input data-no-uniform='true' type='checkbox' id='".$re["ads_auto"]."' class='show_check'>";
+                                                }
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <a href="springweb_fun15_add.php?act=up&id=<?php echo $re["ads_auto"]; ?>">編輯</a>					
+					                        <a href="javascript:Mars_popup2('springweb_fun15.php?st=del&id=<?php echo $re["ads_auto"]; ?>','','width=300,height=200,top=100,left=100')">刪除</a>
+                                        </td>
+                                    </tr>
+                                <?php $ii = $ii+1; }
+                            }else{
+                                echo "<tr><td colspan=4>目前無資料</td></tr>";
+                            }
+                        ?>
                     </tbody>
                 </table>
             </div>

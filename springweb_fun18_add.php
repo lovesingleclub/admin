@@ -1,30 +1,129 @@
-<meta charset="utf-8" />
+<?php
+    /*****************************************/
+    //檔案名稱：springweb_fun18_add.php
+    //後台對應位置：春天網站系統/戀愛講堂-Banner>新增/修改戀愛講堂
+    //改版日期：2022.4.9
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
 
-<script src="js/jquery-1.8.3.js"></script>
-<script src="js/jquery-ui.min.js"></script>
-<script src="js/jquery.fileupload.js"></script>
-<link href="css/jquery-ui-1.8.21.custom.css" rel="stylesheet">
-<link id="bs-css" href="css/bootstrap-cerulean.css" rel="stylesheet">
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+	
+    if($_REQUEST["st"] == "ups"){
+        $an = SqlFilter($_REQUEST["an"],"int");
+        $d1 = SqlFilter($_REQUEST["d1"],"tab");
+        if($an == "" || $d1 == ""){
+            exit();
+        }
+        $SQL = "update webdata set d1='".$d1."' where auton=".$an." and types='lovesalon_banner_".SqlFilter($_REQUEST["v"],"int")."'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        exit();
+    }
 
-<link rel="stylesheet" href="css/jquery.fileupload.css">
-<link rel="stylesheet" href="css/jquery.fileupload-ui.css">
-<noscript>
-    <link rel="stylesheet" href="css/jquery.fileupload-noscript.css">
-</noscript>
-<noscript>
-    <link rel="stylesheet" href="css/jquery.fileupload-ui-noscript.css">
-</noscript>
+    // 上傳圖檔(待測)
+	if($_REQUEST["st"] == "upload"){
+        $an = SqlFilter($_REQUEST["an"],"int");
+        $d1 = SqlFilter($_REQUEST["d1"],"tab");
+        if($an == ""){
+            $an = 0;
+        }
 
+        $SQL = "SELECT top 1 i1 FROM webdata where types='lovesalon_banner_".SqlFilter($_REQUEST["v"],"int")."' order by i1 desc";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $i1 = $result["i1"] + 1;
+        }else{
+            $i1 = 1;
+        }
+
+        $SQL = "SELECT * FROM webdata where auton=".$an." and types='lovesalon_banner_".SqlFilter($_REQUEST["v"],"int")."'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $old_photo_name = $result["d2"];
+            if($old_photo_name != ""){
+                DelFile("upload_image/".$old_photo_name);
+            }
+        }else{
+            $types = "lovesalon_banner_".SqlFilter($_REQUEST["v"],"int")."";
+            $SQL = "INSERT INTO webdata (t1, types, i1) VALUES ('".date("Y/m/d H:i:s")."','".$types."','".$i1."')";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+            $an = $SPConn->lastInsertId();
+        }
+
+        // 儲存圖片
+        if ($_FILES['fileupload']['error'] === UPLOAD_ERR_OK){
+            $urlpath = "upload_image/"; //儲存路徑
+            $ext = pathinfo($_FILES["fileupload"]["name"], PATHINFO_EXTENSION); //附檔名      
+            $fileName = "lovesalon_banner_".SqlFilter($_REQUEST["v"],"int")."_".$an.".".$ext; //檔名  
+			move_uploaded_file($_FILES["fileupload"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
+			
+			$SQL = "update webdata set d1='".$d1."', d2='".$fileName."' where auton=".$an."";
+			$rs = $SPConn->prepare($SQL);
+			$rs->execute();
+            
+            // 回傳序號
+			echo $an;
+        	exit();         
+        }
+    }
+
+    $img = "../img/lovepy_noimg.jpg";
+    if($_REQUEST["an"] != ""){
+        $SQL = "SELECT * FROM webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='lovesalon_banner_".SqlFilter($_REQUEST["v"],"int")."'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $d1 = $result["d1"];
+            $img = $result["d2"];
+        }
+    }
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>春天網站系統</title>
+    <meta charset="utf-8" />
+    <script src="js/jquery-1.8.3.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/jquery.fileupload.js"></script>
+    <link href="css/jquery-ui-1.8.21.custom.css" rel="stylesheet">
+    <link id="bs-css" href="css/bootstrap-cerulean.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/jquery.fileupload.css">
+    <link rel="stylesheet" href="css/jquery.fileupload-ui.css">
+    <noscript>
+        <link rel="stylesheet" href="css/jquery.fileupload-noscript.css">
+    </noscript>
+    <noscript>
+        <link rel="stylesheet" href="css/jquery.fileupload-ui-noscript.css">
+    </noscript>
+</head>
+<body>
 <form method="post" action="springweb_fun18_add.php?st=edit">
     <p>廣告指定：<select name="ads" id="ads" style="height:30px;">
             <option value="">請選擇</option>
-            <option value="1" selected>戀愛講堂 Banner</option>
-            <option value="2">廣告一</option>
-            <option value="3">廣告二</option>
+            <option value="1"<?php if($_REQUEST["v"] == "1") echo " selected" ?>>戀愛講堂 Banner</option>
+            <option value="2"<?php if($_REQUEST["v"] == "2") echo " selected" ?>>廣告一</option>
+            <option value="3"<?php if($_REQUEST["v"] == "3") echo " selected" ?>>廣告二</option>
         </select></p>
     <p>
         <label>指向連結位置：</label>
-        <input type="text" id="d1" name="d1" value="http://www.springclub.com.tw/loveclass_list.php?tag=%AC%F9%B7|,%B7R%B1%A1" size=60 style="height:30px;"><button id="edit_link_button" type="button" class="button">修改連結</button><input type="hidden" id="bd1" value="http://www.springclub.com.tw/loveclass_list.php?tag=%AC%F9%B7|,%B7R%B1%A1" />
+        <input type="text" id="d1" name="d1" value="<?php echo $d1; ?>" size=60 style="height:30px;">
+        <?php 
+            if($_REQUEST["an"] != ""){ ?>
+                <button id="edit_link_button" type="button" class="button">修改連結</button><input type="hidden" id="bd1" value="<?php echo $d1; ?>" />
+            <?php }
+        ?>        
     </p>
     <p>
         <label>展示圖檔(1100x426)：</label>
@@ -38,7 +137,7 @@
     </dl>
     </p>
 
-    <p>lovesalon_banner_1_125.jpg<br><img height=80 src="upload_image/lovesalon_banner_1_125.jpg?t=4532" id="showimg"></p>
+    <p><?php echo $img; ?><br><img height=80 src="upload_image/<?php echo $img; ?>?t=<?php echo rand(1,9999); ?>" id="showimg"></p>
 
     </div>
     <center><button type="submit" class="btn btn-danger" onclick="window.close()" style="width:40%;height:32px;">關閉</button></center>
@@ -55,7 +154,7 @@
                 $d1v = $("#d1").val();
 
             $this.fileupload({
-                    url: "springweb_fun18_add.php?st=upload&an=125",
+                    url: "springweb_fun18_add.php?st=upload&an=<?php echo SqlFilter($_REQUEST["an"],"int"); ?>",
                     type: "POST",
                     dropZone: $this,
                     dataType: 'html',
@@ -99,7 +198,7 @@
                                 return false;
                             }
 
-                            data.url = "springweb_fun18_add.php?st=upload&d1=" + $("#d1").val() + "&v=" + $('#ads').val() + "&an=125";
+                            data.url = "springweb_fun18_add.php?st=upload&d1=" + $("#d1").val() + "&v=" + $('#ads').val() + "&an=<?php echo SqlFilter($_REQUEST["an"],"int"); ?>";
                             data.submit();
 
                         }
@@ -122,7 +221,7 @@
                 data: {
                     st: "ups",
                     d1: $d1,
-                    an: "125",
+                    an: "<?php echo SqlFilter($_REQUEST["an"],"int"); ?>",
                     v: $("#ads").val()
                 }
             }).done(function() {
@@ -131,3 +230,7 @@
         });
     });
 </script>
+</body>
+</html>
+
+

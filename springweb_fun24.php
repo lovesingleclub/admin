@@ -70,11 +70,11 @@
                             $SQL = "SELECT * FROM webdata where types='actiondownload' order by d1 asc";
                             $rs = $SPConn->prepare($SQL);
                             $rs->execute();
-                            $result = $rs->fetch(PDO::FETCH_ASSOC);
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
                             if($result){
                                 foreach($result as $re){ ?>
                                     <tr>
-                                        <td><?php echo $re["d1"]; ?><%=rs("d1")%></td>				
+                                        <td><?php echo $re["d1"]; ?></td>				
                                         <td>
                                             <?php 
                                                 if($re["d2"] != ""){ ?>
@@ -85,8 +85,8 @@
                                             ?>
                                         </td>
                                         <td>
-                                            <a href="javascript:Mars_popup('springweb_fun24_add.asp?an=<%=rs("auton")%>','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                            <a title="刪除" href="springweb_fun24.asp?st=del&an=<%=rs("auton")%>">刪除</a>						
+                                            <a href="javascript:Mars_popup('springweb_fun24_add.php?an=<?php echo $re["auton"]; ?>','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
+                                            <a title="刪除" href="springweb_fun24.php?st=del&an=<?php echo $re["auton"]; ?>">刪除</a>						
                                         </td>
                                     </tr>
                                 <?php }
