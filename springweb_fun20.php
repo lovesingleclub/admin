@@ -1,8 +1,90 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：springweb_fun20.php
+    //後台對應位置：春天網站系統/首頁-上方Banner
+    //改版日期：2022.4.30
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar_spring.php");
+
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+
+    if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["funtourpm"] != "1"){
+        call_alert("您沒有查看此頁的權限。", "login.php", 0);
+    }
+
+    // 圖片上移
+    if($_REQUEST["st"] == "mup"){
+        $nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+        $upline = $nowline+1;
+        $SQL = "update webdata set i1=".$nowline." where i1=".$upline." and types='mobile_index_banner'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")." and types='mobile_index_banner'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+
+        reURL("springweb_fun20.php");
+    }
+
+    // 圖片下移
+    if($_REQUEST["st"] == "mdo"){
+        $nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+        $upline = $nowline-1;
+        $SQL = "update webdata set i1=".$nowline." where i1=".$upline." and types='mobile_index_banner'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")." and types='mobile_index_banner'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+
+        reURL("springweb_fun20.php");
+    }
+
+    if($_REQUEST["st"] == "a1save"){
+        $SQL = "SELECT * FROM webdata where types='index_a1'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if(!$result){
+            $SQL = "INSERT INTO webdata (d1,d2,types) VALUES ('".SqlFilter($_REQUEST["index_a1_text"],"tab")."','".SqlFilter($_REQUEST["index_a1_num"],"tab")."','index_a1')";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }else{
+            $SQL = "UPDATE webdata SET d1='".SqlFilter($_REQUEST["index_a1_text"],"tab")."', d2='".SqlFilter($_REQUEST["index_a1_num"],"tab")."' WHERE types='index_a1'";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }
+        reURL("springweb_fun20.php");
+    }
+
+    // 刪除圖片(待測試)
+    if($_REQUEST["st"] == "del"){
+        $SQL = "select d2 from webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='mobile_index_banner'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            if($result["d2"] != ""){
+                DelFile(("upload_image/".$result["d2"]));
+            }            
+            $SQL = "delete from webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='mobile_index_banner'";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+            if($rs){
+                reURL("springweb_fun20.php");
+            }
+        }        
+    }
+
 ?>
 
 <!-- MIDDLE -->
@@ -38,63 +120,39 @@ require_once("./include/_sidebar.php");
                             <th width="160">資料時間</th>
                             <th width="120">操作</th>
                         </tr>
-
-                        <tr>
-                            <td><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=303&i1=26"><span class="fa fa-arrow-down"></span></a>26</td>
-                            <td><a href="upload_image/mobile_index_banner_20181311481589.jpg" class="fancybox"><img src="upload_image/mobile_index_banner_20181311481589.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/20170908.php?cc=springclub_mobile_officialwebsite_homepage</td>
-                            <td>2020/5/12 上午 11:13:13</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun20_add.php?an=303','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun20.php?st=del&an=303">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=342&i1=26"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=342&i1=26"><span class="fa fa-arrow-down"></span></a>26</td>
-                            <td><a href="upload_image/mobile_index_banner_20186261632158.jpg" class="fancybox"><img src="upload_image/mobile_index_banner_20186261632158.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/20180510/?cc=springclub_mobile_officialwebsite_homepage</td>
-                            <td>2018/6/26 下午 04:32:01</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun20_add.php?an=342','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun20.php?st=del&an=342">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=430&i1=26"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=430&i1=26"><span class="fa fa-arrow-down"></span></a>26</td>
-                            <td><a href="upload_image/mobile_index_banner_201941216582654.jpg" class="fancybox"><img src="upload_image/mobile_index_banner_201941216582654.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/20190401/?cc=springclub_mobile_officialwebsite_homepage</td>
-                            <td>2019/4/12 下午 04:58:27</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun20_add.php?an=430','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun20.php?st=del&an=430">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=489&i1=26"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=489&i1=26"><span class="fa fa-arrow-down"></span></a>26</td>
-                            <td><a href="upload_image/mobile_index_banner_2019111217215133.jpg" class="fancybox"><img src="upload_image/mobile_index_banner_2019111217215133.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/20190801/?cc=springclub_mobile_officialwebsite_homepage</td>
-                            <td>2019/11/12 下午 05:22:42</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun20_add.php?an=489','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun20.php?st=del&an=489">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=540&i1=26"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="#nu" onclick="alert('無法向下');"><span class="fa fa-arrow-down"></span></a>26</td>
-                            <td><a href="upload_image/mobile_index_banner_202052211283119.jpg" class="fancybox"><img src="upload_image/mobile_index_banner_202052211283119.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/201804012/?cc=springclub_mobile_officialwebsite_homepage</td>
-                            <td>2020/5/22 上午 11:28:47</td>
-                            <td>
-                                <a href="javascript:Mars_popup('springweb_fun20_add.php?an=540','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="springweb_fun20.php?st=del&an=540">刪除</a>
-                            </td>
-                        </tr>
-
-
+                        <?php 
+                            $SQL = "SELECT * FROM webdata where types='mobile_index_banner' order by i1 desc";
+                            $rs = $SPConn->prepare($SQL);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){
+                                $ii = 0;
+                                foreach($result as $re){
+                                    if($ii == 0){
+                                        $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                    }else{
+                                        $uahref = "?st=mup&an=".$re["auton"]."&i1=".$re["i1"];
+                                    }                                   
+                                    if($ii == count($result)-1){
+                                        $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                    }else{
+                                        $dahref = "?st=mdo&an=".$re["auton"]."&i1=".$re["i1"];
+                                    } ?>
+                                    <tr>
+                                        <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a><?php echo $re["i1"]; ?></td>
+                                        <td><a href="upload_image/<?php echo $re["d2"] ?>" class="fancybox"><img src="upload_image/<?php echo $re["d2"] ?>" border=0 height=40></a></td>
+                                        <td><?php echo $re["d1"] ?></td>
+                                        <td><?php echo changeDate($re["t1"]) ?></td>
+                                        <td>
+                                            <a href="javascript:Mars_popup('springweb_fun20_add.php?an=<?php echo $re["auton"] ?>','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
+                                            <a title="刪除" href="springweb_fun20.php?st=del&an=<?php echo $re["auton"] ?>">刪除</a>						
+                                        </td>
+                                    </tr>
+                                <?php $ii = $ii+1; }   
+                            }else{
+                                echo "<tr><td colspan=4>目前無資料</td></tr>";
+                            }
+                        ?>
                     </tbody>
                 </table>
 
