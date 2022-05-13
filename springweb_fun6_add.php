@@ -21,7 +21,32 @@
         call_alert("您沒有查看此頁的權限。", "login.php", 0);
     }
 
-    
+    //刪除圖檔(待測)
+	if($_REQUEST["st"] == "delpic"){
+		$urlpath = "webfile/springclub/blog/image";
+       DelFile($urlpath.SqlFilter($_REQUEST["p"],"tab")); //刪除圖檔
+		$SQL = "select fullpic from bloglist where auton=".SqlFilter($_REQUEST["id"],"int")."";
+		$rs = $SPConn->prepare($SQL);
+		$rs->execute();
+		$result = $rs->fetch(PDO::FETCH_ASSOC);
+		if($result){
+			$fullpic = $result["fullpic"];
+            if($fullpic != ""){
+                if(stripos($fullpic,",") !== false){
+                    $fullpic = $fullpic.",";
+                    $fullpic = str_ireplace(SqlFilter($_REQUEST["p"],"tab"),"",$fullpic);
+                }else{
+                    $fullpic = NULL;
+                }
+                if(substr($fullpic,-1) === ","){
+                    $fullpic = substr($fullpic,0,-1);
+                }
+                $SQL = "UPDATE bloglist SET fullpic='".$fullpic."' where auton=".SqlFilter($_REQUEST["id"],"int")."";
+                $rs = $SPConn->prepare($SQL);
+                $rs->execute();
+            }
+		}
+	}
 ?>
 
 <!-- MIDDLE -->
