@@ -95,11 +95,12 @@
                 <table class="table table-striped table-bordered bootstrap-datatable">
                     <tbody>
                         <tr>
-                            <th width="70"></th>
+                            <th width="70"></th>			    
                             <th width=150>日期</th>
                             <th width=80>分類</th>
                             <th width="160">標題</th>
                             <th>內文</th>
+                            <th width="60">狀態</th>
                             <th width="60">圖檔</th>
                             <th width="30">精選</th>
                             <th width=60>操作</th>
@@ -128,6 +129,15 @@
                                         <td><?php echo $re["ads_kind"]; ?></td>
                                         <td><?php echo $re["ads_title"]; ?></td>
                                         <td><?php echo mb_substr(RemoveHTML($re["ads_note"]),0,50,"utf-8"); ?></td>
+                                        <td>
+                                            <?php
+                                                if($re["upload"] == "上架"){
+                                                    echo "<span style='color: green'>上架</span>";
+                                                }else{
+                                                    echo "<span style='color: RED'>下架</span>";
+                                                }
+                                            ?>
+                                        </td>
                                         <td>
                                             <?php 
                                                 if($re["ads_pic1"] != ""){ ?>

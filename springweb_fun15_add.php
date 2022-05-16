@@ -132,7 +132,7 @@
         if($result){
             $ltd = $result["ads_desc"] + 1;
         }
-        $SQL = "INSERT INTO ad_salon (ads_kind,ads_title,ads_tag,ads_teacher,ads_note,ads_pic1,ads_desc,ads_showtime) VALUES ('". SqlFilter($_REQUEST["ads_kind"],"tab") ."','". SqlFilter($_REQUEST["ads_title"],"tab") ."','". SqlFilter($_REQUEST["ads_tag"],"tab") ."','". SqlFilter($_REQUEST["ads_teacher"],"tab") ."','". $ads_note."','".SqlFilter($_REQUEST["ads_pic"],"tab")."',".$ltd.",'".SqlFilter($_REQUEST["ads_showtime"],"tab")."')";
+        $SQL = "INSERT INTO ad_salon (ads_kind,ads_title,ads_tag,ads_teacher,ads_note,ads_pic1,ads_desc,ads_showtime,upload) VALUES ('". SqlFilter($_REQUEST["ads_kind"],"tab") ."','". SqlFilter($_REQUEST["ads_title"],"tab") ."','". SqlFilter($_REQUEST["ads_tag"],"tab") ."','". SqlFilter($_REQUEST["ads_teacher"],"tab") ."','". $ads_note."','".SqlFilter($_REQUEST["ads_pic"],"tab")."',".$ltd.",'".SqlFilter($_REQUEST["ads_showtime"],"tab")."','".SqlFilter($_REQUEST["upload"],"tab")."')";
         $rs = $SPConn->prepare($SQL);
         $rs->execute();
         
@@ -141,7 +141,7 @@
 
     // 更新
     if($_REQUEST["acts"] == "up"){
-        $SQL = "update ad_salon set ads_kind = '". SqlFilter($_REQUEST["ads_kind"],"tab") ."',ads_title = '". SqlFilter($_REQUEST["ads_title"],"tab") ."',ads_tag = '". SqlFilter($_REQUEST["ads_tag"],"tab") ."',ads_teacher = '". SqlFilter($_REQUEST["ads_teacher"],"tab") ."', ads_pic1='". SqlFilter($_REQUEST["ads_pic"],"tab") ."'";
+        $SQL = "update ad_salon set ads_kind = '". SqlFilter($_REQUEST["ads_kind"],"tab") ."',ads_title = '". SqlFilter($_REQUEST["ads_title"],"tab") ."',ads_tag = '". SqlFilter($_REQUEST["ads_tag"],"tab") ."',ads_teacher = '". SqlFilter($_REQUEST["ads_teacher"],"tab") ."', ads_pic1='". SqlFilter($_REQUEST["ads_pic"],"tab") ."', upload='". SqlFilter($_REQUEST["upload"],"tab") ."'";
         $SQL = $SQL . ",ads_note='".$ads_note ."',ads_showtime='".SqlFilter($_REQUEST["ads_showtime"],"tab")."' where ads_auto = ". SqlFilter($_REQUEST["pid"],"int") ."";
         $rs = $SPConn->prepare($SQL);
         $rs->execute();
@@ -164,6 +164,7 @@
             $ads_note = $result["ads_note"];
             $ads_showtime = $result["ads_showtime"];
 	        $nows = $result["ads_time"];
+            $upload = $result["upload"];
             if($ads_note != ""){
                 $ads_note = str_replace("<br>",PHP_EOL,$ads_note);
             }
@@ -259,6 +260,15 @@
                             <tr>
                                 <td align="left" valign="middle">內文</td>
                                 <td><textarea name="ads_note" class="editor" style="width:80%;height:350px;"><?php echo $ads_note; ?></textarea></td>
+                            </tr>
+                            <tr>
+                                <td align="left" valign="middle">上下架</td>
+								<td>
+									<select name="upload" id="upload">	
+										<option value="上架"<?php if($upload == "上架") echo " selected"; ?>>上架</option>
+										<option value="下架"<?php if($upload == "下架") echo " selected"; ?>>下架</option>
+									</select>
+								</td>
                             </tr>
                             <tr>
                                 <td colspan=2 align="center"><input name="ads_pic" id="ads_pic" type="hidden" value="<?php echo $ads_pic; ?>"><input name="acts" id="acts" type="hidden" value="<?php echo SqlFilter($_REQUEST["act"],"tab"); ?>"><input name="pid" type="hidden" id="pid" value="<?php echo SqlFilter($_REQUEST["id"],"int"); ?>">
