@@ -241,7 +241,7 @@ if ($_REQUEST["st"] == "del") {
                         <?php }
                         ?>
                     </p>
-                    <form action="ad_autoedm.asp?st=make" method="post">
+                    <form action="ad_autoedm.php?st=make" method="post">
                         <p>UTM Code：<input type="text" name="utmcode" id="utmcode" style="width:90%" value="utm_source=Nomembership&utm_medium=mail_Month_edm&utm_campaign=girls&cc=springclub_mail_Monthedm0331"></p>
                         <table style="width:760px">
                             <tr>

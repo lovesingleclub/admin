@@ -1,8 +1,64 @@
 <?php
-require_once("_inc.php");
-require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+    /*****************************************/
+    //檔案名稱：springweb_fun7.php
+    //後台對應位置：春天網站系統/APP 操作說明
+    //改版日期：2022.5.11
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
+    require_once("_inc.php");
+    require_once("./include/_function.php");
+    require_once("./include/_top.php");
+    require_once("./include/_sidebar_spring.php");
+
+    //程式開始 *****
+    if ($_SESSION["MM_Username"] == "") {
+        call_alert("請重新登入。", "login.php", 0);
+    }
+
+    if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["funtourpm"] != "1"){
+        call_alert("您沒有查看此頁的權限。", "login.php", 0);
+    }
+
+    // 文章上移
+    if($_REQUEST["st"] == "up_line"){
+        $nowline = round(SqlFilter($_REQUEST["ad"],"int"));
+        $upline = $nowline+1;
+        $SQL = "update app_help set t_desc=".$nowline." where t_desc=".$upline."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update app_help set t_desc=".$upline." where auton=".SqlFilter($_REQUEST["t_auto"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+    }
+
+    // 文章下移
+    if($_REQUEST["st"] == "down_line"){
+        $nowline = round(SqlFilter($_REQUEST["ad"],"int"));
+        $upline = $nowline-1;
+        $SQL = "update app_help set t_desc=".$nowline." where t_desc=".$upline."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $SQL = "update app_help set t_desc=".$upline." where auton=".SqlFilter($_REQUEST["t_auto"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+    }
+
+    // 刪除
+    if($_REQUEST["st"] == "del"){
+        $SQL = "select * from app_help where auton=".SqlFilter($_REQUEST["a"],"int")."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $SQL = "delete from app_help where auton=".SqlFilter($_REQUEST["a"],"int")."";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }        
+
+        reURL("win_close.php?m=資料刪除中");
+    }
 ?>
 
 <!-- MIDDLE -->
@@ -31,46 +87,37 @@ require_once("./include/_sidebar.php");
                     <a href="springweb_fun7_form.php" class="btn btn-warning">其他問題</a>
                 </p>
                 <table class="table table-striped table-bordered bootstrap-datatable">
-                    <tr>
-                        <td width=80><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=9&t_auto=11"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>為什麼選擇“春天會館”?</td>
-                        <td width="200"><a href="javascript:Mars_popup('springweb_fun7_add.php?st=ed&a=11','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=11','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=8&t_auto=10"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=8&t_auto=10"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>如何使用春天會館app交友功能?</td>
-                        <td width="200"><a href="javascript:Mars_popup('springweb_fun7_add.php?st=ed&a=10','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=10','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=7&t_auto=9"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=7&t_auto=9"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>速配名單是什麼?</td>
-                        <td width="200"><a href="javascript:Mars_popup('springweb_fun7_add.php?st=ed&a=9','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=9','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=6&t_auto=8"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=6&t_auto=8"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>如何送禮給心儀的他?</td>
-                        <td width="200"><a href="javascript:Mars_popup('springweb_fun7_add.php?st=ed&a=8','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=8','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=5&t_auto=7"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=5&t_auto=7"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>如何留言/寄信給心儀的他?</td>
-                        <td width="200"><a href="javascript:Mars_popup('springweb_fun7_add.php?st=ed&a=7','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=7','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=4&t_auto=6"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=4&t_auto=6"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>如何精準找尋心儀的他?</td>
-                        <td width="200"><a href="javascript:Mars_popup('springweb_fun7_add.php?st=ed&a=6','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=6','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=3&t_auto=5"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=3&t_auto=5"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>如何知道誰對我感興趣/我關注過誰?</td>
-                        <td width="200"><a href="javascript:Mars_popup('springweb_fun7_add.php?st=ed&a=5','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=5','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=2&t_auto=4"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="#nu" onclick="alert('無法向下');"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>如何升級享更多功能和權益?</td>
-                        <td width="200"><a href="javascript:Mars_popup('springweb_fun7_add.php?st=ed&a=4','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=4','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
+                <?php 
+                    $SQL = "SELECT * FROM app_help order by t_desc desc";
+                    $rs = $SPConn->prepare($SQL);
+                    $rs->execute();
+                    $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                    if($result){
+                        $ii = 0;
+                        foreach($result as $re){
+                            if($ii == 0){
+                                $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                            }else{
+                                $uahref = "?st=up_line&ad=".$re["t_desc"]."&t_auto=".$re["auton"];
+                            }                                   
+                            if($ii == count($result)-1){
+                                $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                            }else{
+                                $dahref = "?st=down_line&ad=".$re["t_desc"]."&t_auto=".$re["auton"];
+                            } ?>
+                            <tr>
+                                <td width=80><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>
+                                <td><?php echo $re["quest"]; ?></td>
+                                <td width='200'>
+                                    <a href="javascript:Mars_popup('springweb_fun7_add.php?st=ed&a=<?php echo $re["auton"]; ?>','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');">修改</a>　				
+                                    <a href="javascript:;" onClick="Mars_popup2('springweb_fun7.php?st=del&a=<?php echo $re["auton"]; ?>','','width=300,height=200,top=30,left=30')">刪除</a>						
+                                </td>
+                            </tr>
+                        <?php $ii = $ii+1; }
+                    }else{
+                        echo "<tr><td colspan=3>目前無資料</td></tr>";
+                    }
+                ?>
                 </table>
             </div>
         </div>
