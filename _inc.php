@@ -1,6 +1,6 @@
 <?php
 $ip = $_SERVER["REMOTE_ADDR"];
-if ( $ip != "60.250.92.145" && $ip != "220.135.185.69" ){
+if ( $ip != "60.250.92.145" && $ip != "220.135.185.69" && $ip != "211.72.70.147"){
 	echo "<script language=\"javascript\">" ;
 	echo "alert('無權限');";
 	echo "location.href='login.php';";

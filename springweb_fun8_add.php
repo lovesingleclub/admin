@@ -1,5 +1,12 @@
-
 <?php 
+    /*****************************************/
+    //檔案名稱：springweb_fun8_add.php
+    //後台對應位置：春天網站系統/PC頁面TDK>新增TDK
+    //改版日期：2022.5.13
+    //改版設計人員：Jack
+    //改版程式人員：Jack
+    /*****************************************/
+
     require_once("_inc.php");
     require_once("./include/_function.php");
 
@@ -43,7 +50,7 @@
             $page = $result["page"];
             $title = $result["title"];
             $description = $result["description"];
-            $keyword = $result["keyword"];
+            $keywords = $result["keywords"];
         }
     }
 
@@ -65,7 +72,7 @@
     <br>
     <div style="line-height:30px;">標題(title)：<input type="text" name="title" id="title" style="width:60%;" value="<?php echo $title; ?>"></div>
     <div style="line-height:30px;" style="line-height:30px;">描述(description)：<input type="text" name="description" id="description" style="width:60%;" value="<?php echo $description; ?>"></div>
-    <div style="line-height:30px;">關鍵字(keywords)：<input type="text" name="keywords" id="keywords" style="width:60%;" value="<?php echo $keyword; ?>"></div>
+    <div style="line-height:30px;">關鍵字(keywords)：<input type="text" name="keywords" id="keywords" style="width:60%;" value="<?php echo $keywords; ?>"></div>
     <div style="text-align:center;margin: 0 auto;"><input type="submit" value="送出"></div>
 </form>
 <script type="text/javascript">

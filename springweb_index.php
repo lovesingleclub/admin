@@ -11,6 +11,15 @@
     require_once("./include/_function.php");
     require_once("./include/_top.php");
     require_once("./include/_sidebar_spring.php");
+
+    // 程式開始
+    if($_SESSION["MM_Username"] == ""){
+        call_alert("請重新登入。","login.php",0);
+    }
+
+    if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["funtourpm"] != "1"){
+        call_alert("您沒有查看此頁的權限。","login.php",0);
+    }
 ?>
 
 <!-- MIDDLE -->
@@ -38,7 +47,7 @@
 
                 <table class="table table-striped table-bordered bootstrap-datatable">
 
-                    <thead>-+-------------------------------------------------------------------------------------------------
+                    <thead>
                         <tr>
                             <td width="110">服務器地址</td>
                             <td width="390">名稱 <?php echo $_SERVER['SERVER_NAME'] ; ?> (IP:<?php echo $_SERVER["LOCAL_ADDR"]; ?>) 端口:<?php echo $_SERVER["SERVER_PORT"]; ?></td>
@@ -66,7 +75,7 @@
                         </tr>
                     </thead>
                     <tbody>
-
+                        
                     </tbody>
                 </table>
             </div>
