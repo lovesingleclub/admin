@@ -84,7 +84,7 @@
 
             <div class="panel-body">
                 <p><a href="javascript:Mars_popup('springweb_fun7_add.php','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=600,height=250,top=150,left=150');" class="btn btn-info">新增說明</a>
-                    <a href="springweb_fun7_form.php" class="btn btn-warning">其他問題</a>
+                    <!-- <a href="springweb_fun7_form.php" class="btn btn-warning">其他問題</a> -->
                 </p>
                 <table class="table table-striped table-bordered bootstrap-datatable">
                 <?php 
