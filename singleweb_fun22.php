@@ -1,8 +1,76 @@
 <?php
+
+/*****************************************/
+//檔案名稱：singleweb_fun22.php
+//後台對應位置：約會專家系統/GT活動管理
+//改版日期：2022.6.1
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
+
 require_once("_inc.php");
 require_once("./include/_function.php");
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_single.php");
+
+//程式開始 *****
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
+}
+
+// 上移
+if($_REQUEST["st"] == "mup"){
+	$nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+	$upline = $nowline+1;
+	$SQL = "update si_webdata set i1=".$nowline." where i1='".$upline."'";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+	$SQL = "update si_webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")."";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+
+	reURL("singleweb_fun22.php");
+}
+
+// 下移
+if($_REQUEST["st"] == "mdo"){
+	$nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+	$upline = $nowline-1;
+	$SQL = "update si_webdata set i1=".$nowline." where i1=".$upline."";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+	$SQL = "update si_webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")."";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+
+	reURL("singleweb_fun22.php");
+}
+
+// 刪除圖片(待測試)
+if($_REQUEST["st"] == "del"){
+	$SQL = "select d5 from si_webdata where auton=".SqlFilter($_REQUEST["an"],"int")."  and types='event_201220'";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+	$result = $rs->fetch(PDO::FETCH_ASSOC);
+	if($result){
+        if($result["d5"] != ""){
+            foreach(explode(",", $result["d5"]) as $dd5){
+                DelFile(("singleparty_image/event_custom/".$dd5));
+            }
+        }
+		
+		$SQL = "delete from si_webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='event_201220'";
+		$rs = $SPConn->prepare($SQL);
+		$rs->execute();
+		if($rs){
+			reURL("singleweb_fun22.php");
+		}
+	}        
+}
 ?>
 
 <!-- MIDDLE -->
@@ -39,50 +107,47 @@ require_once("./include/_sidebar.php");
 
                             <th>操作</th>
                         </tr>
-
-                        <tr>
-                            <td><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=2710&i1=1"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>
-                                有
-                            </td>
-                            <td>偽日本遊正夯！女孩浴衣體驗！</td>
-                            <td>活動名稱：偽日本遊正夯！女孩浴衣體驗活動時間：2021/10/23（六）10:00~17:00集合地點：中壢火車站（確切地點請見行前通知）活動地點：蛋寶生技不老村(桃園市平鎮區金陵路三段105號)報名條件：20-40歲單身未婚女性/有穩定正當工作報名費用：700元/人（原價$1500元）💗費用包含：✅專屬巴士接送、✅日式浴衣體驗、✅蛋塔DIY體驗、✅輕食餐點、✅保險、✅活動遊戲費用活動人數：12人，最低成團人數6人</td>
-
-                            <td>
-                                <a href="singleweb_fun22_add.php?an=2710">編輯</a>
-                                <a title="刪除" href="singleweb_fun22.php?st=del&an=2710">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=2711&i1=1"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=2711&i1=1"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>
-                                有
-                            </td>
-                            <td>迷人上海風穿搭體驗－復古女神就是妳！</td>
-                            <td>活動時間：2020/10/30(六)下午14:30-17:00活動地點：桃園市報名條件：20-40歲單身未婚女性/有穩定正當工作報名費用：800/人活動人數：16人，最低成團人數10人</td>
-
-                            <td>
-                                <a href="singleweb_fun22_add.php?an=2711">編輯</a>
-                                <a title="刪除" href="singleweb_fun22.php?st=del&an=2711">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=2712&i1=1"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="#nu" onclick="alert('無法向下');"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>
-                                有
-                            </td>
-                            <td>Ｍr.right在哪裡？愛情卡告訴妳！</td>
-                            <td>活動時間：2021/10/31(日)下午16:00-18:00活動地點：台北市報名條件：20-40歲單身未婚女性/有穩定正當工作報名費用：650元/人活動人數：12人，最低成團人數3人</td>
-
-                            <td>
-                                <a href="singleweb_fun22_add.php?an=2712">編輯</a>
-                                <a title="刪除" href="singleweb_fun22.php?st=del&an=2712">刪除</a>
-                            </td>
-                        </tr>
-
-
+                        <?php 
+                            $SQL = "SELECT * FROM si_webdata where types='event_201220' order by i1 desc";
+                            $rs = $SPConn->prepare($SQL);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){
+                                $ii = 0;
+                                foreach($result as $re){
+                                    if($ii == 0){
+                                        $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                    }else{
+                                        $uahref = "?st=mup&an=".$re["auton"]."&i1=".$re["i1"];
+                                    }                                   
+                                    if($ii == count($result)-1){
+                                        $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                    }else{
+                                        $dahref = "?st=mdo&an=".$re["auton"]."&i1=".$re["i1"];
+                                    } ?>
+                                    <tr>
+                                        <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>
+                                        <td>
+                                            <?php 
+                                                if($re["d5"] != ""){ 
+                                                   echo "有";
+                                                }else{
+                                                    echo "無";
+                                                }
+                                            ?>
+                                        </td>
+                                        <td><?php echo $re["d1"] ?></td>
+                                        <td><?php echo $re["n1"] ?></td>
+                                        <td>
+                                            <a href="singleweb_fun22_add.php?an=<?php echo $re["auton"] ?>">編輯</a>
+                                            <a title="刪除" href="singleweb_fun22.php?st=del&an=<?php echo $re["auton"] ?>">刪除</a>						
+                                        </td>
+                                    </tr>
+                                <?php $ii = $ii+1; }   
+                            }else{
+                                echo "<tr><td colspan=5>目前無資料</td></tr>";
+                            }
+                        ?>                      
                     </tbody>
                 </table>
             </div>

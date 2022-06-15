@@ -1,10 +1,123 @@
 <?php
+
+/*****************************************/
+//檔案名稱：singleweb_fun16_add.php
+//後台對應位置：約會專家系統/主題活動管理>新增主題活動
+//改版日期：2022.5.31
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
+
 require_once("_inc.php");
 require_once("./include/_function.php");
+// 上傳&刪除圖檔(待測)
+if($_REQUEST["st"] == "upload"){
+    $d5 = SqlFilter($_REQUEST["d5b"],"tab");
+    if ($_FILES['fileupload']['error'] === UPLOAD_ERR_OK){
+        $urlpath = "singleparty_image/event_custom/"; //儲存路徑
+        $ext = pathinfo($_FILES["fileupload"]["name"], PATHINFO_EXTENSION); //附檔名      
+        $fileName = date("Y").date("n").date("j").date("H").date("i").date("s")."_event_custom_".rand(1,1000).".".$ext; //檔名
+        move_uploaded_file($_FILES["fileupload"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
+
+        //如果D5不為空則刪圖檔
+        if($d5 != "" && $fileName != ""){
+            DelFile($urlpath.$d5);
+        }
+        echo $fileName;
+        exit();
+    }
+}
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_single.php");
+
+// 新增
+if($_REQUEST["st"] == "add"){
+    if($_REQUEST["d2"] != ""){
+        $d2 = SqlFilter($_REQUEST["d2"],"tab");
+    }else{
+        $d2 = "";
+    }
+    if($_REQUEST["d3"] != ""){
+        $d3 = SqlFilter($_REQUEST["d3"],"tab");
+    }else{
+        $d3 = "";
+    }
+    if($_REQUEST["d5"] != ""){
+        $d5 = SqlFilter($_REQUEST["d5"],"tab");
+    }else{
+        $d5 = "";
+    }
+    if($_REQUEST["t1"] != ""){
+        $t1 = SqlFilter($_REQUEST["t1"],"tab");
+    }else{
+        $t1 = "";
+    }
+
+    if($_REQUEST["an"] != ""){
+        $SQL = "SELECT * FROM si_webdata where auton='".SqlFilter($_REQUEST["an"],"int")."'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if(!$result){
+            call_alert("資料讀取錯誤。","ClOsE",0);
+        }else{
+            //修改
+            $SQL = "UPDATE si_webdata SET d1='".SqlFilter($_REQUEST["d1"],"tab")."', d2='".$d2."', d3='".$d3."', d4='".SqlFilter($_REQUEST["d4"],"tab")."', d5='".$d5."', t1='".$t1."', n1='".str_replace(PHP_EOL,"<br>",$_REQUEST["n1"])."', types='event_custom', times='".date("Y/m/d H:i:s")."' WHERE auton='".SqlFilter($_REQUEST["an"],"int")."'";
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }        
+    }else{
+        // 新增
+        $SQL = "SELECT top 1 i1 FROM si_webdata where types='event_custom' order by i1 desc";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $i1 = $result["i1"] + 1;
+        }else{
+            $i1 = 1;
+        }        
+        
+        $SQL = "INSERT INTO si_webdata (d1, d2, d3, d4, d5, t1, i1, n1, types, times) VALUES ('".SqlFilter($_REQUEST["d1"],"tab")."','".$d2."','".$d3."','".SqlFilter($_REQUEST["d4"],"tab")."','".$d5."','".$t1."','".$i1."','".str_replace(PHP_EOL,"<br>",$_REQUEST["n1"])."','event_custom','".date("Y/m/d H:i:s")."')";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+    }
+
+    reURL("singleweb_fun16.php");        
+}
+
+//讀取
+if($_REQUEST["an"] != ""){
+    $SQL = "SELECT * FROM si_webdata where auton=".SqlFilter($_REQUEST["an"],"int")."";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        $t1 = $result["t1"];
+        $n1 = str_replace(PHP_EOL,"<br>",$result["n1"]);
+        $d1 = $result["d1"];    
+        $d2 = $result["d2"];
+        $d3 = $result["d3"];
+        $d4 = $result["d4"];	  
+        $d5 = $result["d5"];
+        if($d5 != ""){
+            $d5b = "&d5b=".$d5;
+        }
+        $fsq = "&an=".SqlFilter($_REQUEST["an"],"int");
+	    $fsb = "修改";
+    }else{
+        call_alert("資料讀取錯誤。","ClOsE",0);
+    }
+}else{
+    $fsb = "新增";
+	$fsq = "";
+}
 ?>
 
+<link rel="stylesheet" href="css/jquery.fileupload.css">
+<link rel="stylesheet" href="css/jquery.fileupload-ui.css">
+<noscript><link rel="stylesheet" href="css/jquery.fileupload-noscript.css"></noscript>
+<noscript><link rel="stylesheet" href="css/jquery.fileupload-ui-noscript.css"></noscript>
 <!-- MIDDLE -->
 <section id="middle">
     <!-- page title -->
@@ -13,7 +126,7 @@ require_once("./include/_sidebar.php");
             <li><a href="index.php">管理系統</a></li>
             <li>約會專家系統</li>
             <li><a href="singleweb_fun16.php">主題活動管理</a></li>
-            <li class="active">新增主題活動</li>
+            <li class="active"><?php echo $fsb; ?>主題活動</li>
         </ol>
     </header>
     <!-- /page title -->
@@ -23,49 +136,53 @@ require_once("./include/_sidebar.php");
         <div class="panel panel-default">
             <div class="panel-heading">
                 <span class="title elipsis">
-                    <strong>新增主題活動</strong> <!-- panel title -->
+                    <strong><?php echo $fsb; ?>主題活動</strong> <!-- panel title -->
                 </span>
             </div>
 
             <div class="panel-body">
-                <form action="?st=add" method="post" id="form1" onSubmit="return chk_form()" class="form-inline">
+                <form action="?st=add<?php echo $fsq; ?>" method="post" id="form1" onSubmit="return chk_form()" class="form-inline">
                     <table class="table table-striped table-bordered bootstrap-datatable">
                         <tbody>
                             <tr>
                                 <td>
-                                    活動標題：<input name="d1" type="text" id="d1" value="" style="width:80%" class="form-control" required>
+                                    活動標題：<input name="d1" type="text" id="d1" value="<?php echo $d1; ?>" style="width:80%" class="form-control" required>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    愛心小標：<input name="d2" type="text" id="d2" value="" style="width:80%" class="form-control">
+                                    愛心小標：<input name="d2" type="text" id="d2" value="<?php echo $d2; ?>" style="width:80%" class="form-control">
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    時間小標：<input type="text" name="t1" id="t1" value="" class="datepicker" autocomplete="off">
+                                    時間小標：<input type="text" name="t1" id="t1" value="<?php echo Date_EN($t1,1); ?>" class="datepicker" autocomplete="off">
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    房屋小標：<input name="d3" type="text" id="d3" value="" style="width:80%" class="form-control">
+                                    房屋小標：<input name="d3" type="text" id="d3" value="<?php echo $d3; ?>" style="width:80%" class="form-control">
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    活動說明： <textarea type="text" name="n1" id="n1" class="form-control" style="width:80%;height:100px;font-size:13px;" rows=4 required></textarea>
+                                    活動說明： <textarea type="text" name="n1" id="n1" class="form-control" style="width:80%;height:100px;font-size:13px;" rows=4 required><?php echo str_replace("<br>",PHP_EOL,$n1); ?></textarea>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    活動連結：<input name="d4" type="text" id="d4" class="form-control" value="" style="width:80%" required>
+                                    活動連結：<input name="d4" type="text" id="d4" class="form-control" value="<?php echo $d4; ?>" style="width:80%" required>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <div style="width:40%;">列表圖：
                                         <span id="img_div">
-
+                                            <?php 
+                                                if($d5 != ""){ ?>
+                                                    <img height=200 src="singleparty_image/event_custom/<?php echo $d5; ?>" border=0>
+                                                <?php }
+                                            ?>
                                         </span>
                                         <p></p>
                                         <span class="btn btn-danger fileinput-button"><span>選擇檔案</span><input data-no-uniform="true" id="file_uploads" type="file" class="fileupload" name="fileupload"></span>
@@ -74,14 +191,14 @@ require_once("./include/_sidebar.php");
                                         </div>
                                     </div>
                                     <div id="fileupload_show"></div>
-                                    <input type="hidden" name="d5" id="d5" value="">
+                                    <input type="hidden" name="d5" id="d5" value="<?php echo $d5; ?>">
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <div align="center">
 
-                                        <input id="submit3" type="submit" value="確定新增" class="btn btn-info" style="width:50%;">
+                                        <input id="submit3" type="submit" value="確定<?php echo $fsb; ?>" class="btn btn-info" style="width:50%;">
                                     </div>
                                 </td>
                             </tr>
@@ -130,7 +247,7 @@ require_once("./include/_bottom.php");
     $(function() {
 
         $("#file_uploads").fileupload({
-                url: "singleweb_fun16_add.php?st=upload",
+                url: "singleweb_fun16_add.php?st=upload<?php echo $d5b; ?>",
                 type: "POST",
                 dropZone: $(this),
                 dataType: 'html',
@@ -182,7 +299,7 @@ require_once("./include/_bottom.php");
 
 
         $("#file_uploads2").fileupload({
-                url: "singleweb_fun16_add.php?st=upload",
+                url: "singleweb_fun16_add.php?st=upload<?php echo $d3b; ?>",
                 type: "POST",
                 dropZone: $(this),
                 dataType: 'html',

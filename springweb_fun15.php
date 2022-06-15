@@ -37,7 +37,7 @@
     if($_REQUEST["st"] == "down_line"){
         $nowline = round(SqlFilter($_REQUEST["ad"],"int"));
         $upline = $nowline-1;
-        $SQL = "update ad_salon set ads_desc=".$nowline." where ads_auto=".$upline."";
+        $SQL = "update ad_salon set ads_desc=".$nowline." where ads_desc=".$upline."";
         $rs = $SPConn->prepare($SQL);
         $rs->execute();
         $SQL = "update ad_salon set ads_desc=".$upline." where ads_auto=".SqlFilter($_REQUEST["ads_auto"],"int")."";
@@ -161,7 +161,7 @@
                                     </tr>
                                 <?php $ii = $ii+1; }
                             }else{
-                                echo "<tr><td colspan=4>目前無資料</td></tr>";
+                                echo "<tr><td colspan=9>目前無資料</td></tr>";
                             }
                         ?>
                     </tbody>

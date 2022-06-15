@@ -1,8 +1,98 @@
 <?php
+
+/*****************************************/
+//檔案名稱：singleweb_fun17.php
+//後台對應位置：約會專家系統/首頁推薦會員
+//改版日期：2022.6.13
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
+
 require_once("_inc.php");
 require_once("./include/_function.php");
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_single.php");
+
+//程式開始 *****
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
+}
+
+if($_REQUEST["st"] == "agree" && $_REQUEST["t"] != ""){
+    $SQL = "update member_data set singleparty_hot=1 where mem_num='".SqlFilter($_REQUEST["t"],"tab")."'";
+    $rs = $SPConn->prepare($SQL);
+	$rs->execute();
+    echo "fix";
+    exit();
+}
+
+if($_REQUEST["st"] == "cancel" && $_REQUEST["t"] != ""){
+    $SQL = "update member_data set singleparty_hot=0 where mem_num='".SqlFilter($_REQUEST["t"],"tab")."'";
+    $rs = $SPConn->prepare($SQL);
+	$rs->execute();
+    echo "fix";
+    exit();
+}
+
+if($_REQUEST["st"] == "remove" && $_REQUEST["t"] != ""){
+    $SQL = "update member_data set singleparty_hot=0, singleparty_hot_check=0 where mem_num='".SqlFilter($_REQUEST["t"],"tab")."'";
+    $rs = $SPConn->prepare($SQL);
+	$rs->execute();
+    echo "fix";
+    exit();
+}
+
+// 上移
+if($_REQUEST["st"] == "mup"){
+	$nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+	$upline = $nowline+1;
+	$SQL = "update si_webdata set i1=".$nowline." where i1='".$upline."'";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+	$SQL = "update si_webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")."";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+
+	reURL("singleweb_fun17.php");
+}
+
+// 下移
+if($_REQUEST["st"] == "mdo"){
+	$nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+	$upline = $nowline-1;
+	$SQL = "update si_webdata set i1=".$nowline." where i1=".$upline."";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+	$SQL = "update si_webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")."";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+
+	reURL("singleweb_fun17.php");
+}
+
+// 刪除圖片(待測試)
+if($_REQUEST["st"] == "del"){
+	$SQL = "select d2, d3 from si_webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='coupon'";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+	$result = $rs->fetch(PDO::FETCH_ASSOC);
+	if($result){
+        DelFile(("singleparty_image/coupon/".$result["d2"]));
+        DelFile(("singleparty_image/coupon/".$result["d3"]));
+		
+		$SQL = "delete from si_webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='coupon'";
+		$rs = $SPConn->prepare($SQL);
+		$rs->execute();
+		if($rs){
+			reURL("singleweb_fun17.php");
+		}
+	}        
+}
+
 ?>
 <!-- MIDDLE -->
 <section id="middle">
@@ -41,100 +131,135 @@ require_once("./include/_sidebar.php");
                                 <th width=60>照片</th>
                                 <th width=200></th>
                             </tr>
+                            <?php 
+                                $nopic = "";
+                                
+                                //取得總筆數
+                                $SQL = "Select count(mem_auto) As total_size FROM member_data where mem_level='mem' and singleparty_hot_check=1";
+                                $rs = $SPConn->prepare($SQL);
+                                $rs->execute();
+                                $result=$rs->fetchAll(PDO::FETCH_ASSOC);
+                                foreach($result as $re);
+                                if ( count($result) == 0 || $re["total_size"] == 0 ) {
+                                    $total_size = 0;
+                                }else{
+                                    $total_size = $re["total_size"];
+                                }                                
 
-                            <tr id="row_1348063">
-                                <td>1348063</td>
-                                <td class="center"><a href="ad_mem_detail.php?mem_num=1348063" target="_blank">蘇孟霖</a>
-                                    <div style="float:right">
-                                        &nbsp;<span class="label" style="background:#c22c7d"><a href="#" style="color:white;" data-toggle="tooltip" data-original-title="約會專家主帳號">專</a></span></div>
-                                </td>
-                                <td class="center">男</td>
-                                <td class="center">1987/8/22　　34 歲</td>
-                                <td class="center">碩士</td>
-
-
-                                <td class="center">
-                                    <font color=green>受理：</font>台南 - 杜佳倩<br>
-                                    <font color=green>排約：</font>顏琇<br>
-                                    <font color=green>邀約：</font>台南 - 杜佳倩<br>
-                                    <font color=blue>輸入：</font>張素慈
-                                </td>
-                                <td class="center">
-                                    <a href="../photo/20211018101447_1348063_997280.jpeg?t=7054" class="fancybox"><img src="../photo/20211018101447_1348063_997280.jpeg?t=5333" width="100"></a>
-                                </td>
-                                <td>
-                                    <a href="#r" onclick="agree($(this), '1348063')" class="btn btn-success">通過</a><a href="#r" onclick="remove($(this), '1348063')" class="btn btn-danger">移除</a>
-
-                                </td>
-                            </tr>
-
-                            <tr id="row_719957">
-                                <td>719957</td>
-                                <td class="center"><a href="ad_mem_detail.php?mem_num=719957" target="_blank">劉明諺</a>
-                                    <div style="float:right">
-                                        &nbsp;<span class="label" style="background:#c22c7d"><a href="#" style="color:white;" data-toggle="tooltip" data-original-title="約會專家主帳號">專</a></span></div>
-                                </td>
-                                <td class="center">男</td>
-                                <td class="center">1980/9/27　　41 歲</td>
-                                <td class="center">大學</td>
-
-
-                                <td class="center">
-                                    <font color=green>受理：</font>台南 - 錢淑華<br>
-                                    <font color=green>排約：</font>金雪娟<br>
-                                    <font color=green>邀約：</font>八德 - 蔡佩蓁 Sunny
-                                </td>
-                                <td class="center">
-                                    <a href="../photo/20211011142155_719957_158810.jpg?t=5794" class="fancybox"><img src="../photo/20211011142155_719957_158810.jpg?t=2895" width="100"></a>
-                                </td>
-                                <td>
-                                    <a href="#r" onclick="agree($(this), '719957')" class="btn btn-success">通過</a><a href="#r" onclick="remove($(this), '719957')" class="btn btn-danger">移除</a>
-
-                                </td>
-                            </tr>
-
-                            <tr id="row_2086723">
-                                <td>2086723</td>
-                                <td class="center"><a href="ad_mem_detail.php?mem_num=2086723" target="_blank">李堃寧</a>
-                                    <div style="float:right">
-                                        &nbsp;<span class="label" style="background:#c22c7d"><a href="#" style="color:white;" data-toggle="tooltip" data-original-title="約會專家主帳號">專</a></span></div>
-                                </td>
-                                <td class="center">男</td>
-                                <td class="center">1985/6/7　　36 歲</td>
-                                <td class="center">大學</td>
-
-
-                                <td class="center">
-                                    <font color=green>受理：</font>台南 - 杜佳倩<br>
-                                    <font color=green>排約：</font>顏琇<br>
-                                    <font color=green>邀約：</font>台南 - 杜佳倩<br>
-                                    <font color=blue>輸入：</font>台南督導
-                                </td>
-                                <td class="center">
-                                    <a href="../photo/2021102125410_2086723_868679.jpg?t=3019" class="fancybox"><img src="../photo/2021102125410_2086723_868679.jpg?t=7746" width="100"></a>
-                                </td>
-                                <td>
-                                    <a href="#r" onclick="agree($(this), '2086723')" class="btn btn-success">通過</a><a href="#r" onclick="remove($(this), '2086723')" class="btn btn-danger">移除</a>
-
-                                </td>
-                            </tr>
+                                //取得分頁資料
+                                $tPageSize = 50; //每頁幾筆
+                                $tPage = 1; //目前頁數
+                                if ( $_REQUEST["tPage"] > 1 ){ $tPage = $_REQUEST["tPage"];}
+                                $tPageTotal = ceil(($total_size/$tPageSize)); //總頁數
+                                if ( $tPageSize*$tPage < $total_size ){
+                                    $page2 = 50;
+                                }else{
+                                    $page2 = (50-(($tPageSize*$tPage)-$total_size));
+                                }
+                                
+                                $SQL = "SELECT * FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM member_data WHERE mem_level='mem' and singleparty_hot_check=1 order by singleparty_hot_check desc, singleparty_hot asc ) t1 order by singleparty_hot_check, singleparty_hot) t2 order by singleparty_hot_check desc, singleparty_hot asc";
+                                $rs = $SPConn->prepare($SQL);
+                                $rs->execute();
+                                $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                                if($result){
+                                    foreach($result as $re){ ?>
+                                        <tr id="row_<?php echo $re["mem_num"]; ?>">
+                                            <td><?php echo $re["mem_num"]; ?></td>
+                                            <td class="center"><a href="ad_mem_detail.php?mem_num=<?php echo $re["mem_num"]; ?>" target="_blank"><?php echo $re["mem_name"]; ?></a>
+                                                <div style="float:right">
+                                                <?php
+                                                    if($re["si_account"] != "" && $re["si_account"] != "0"){
+                                                        echo "&nbsp;<span class='label' style='background:#c22c7d'><a href='#' style='color:white;' data-toggle='tooltip' data-original-title='約會專家主帳號'>專</a></span>";
+                                                    }
+                                                    if($re["si_enterprise"] == 1){
+                                                        echo "&nbsp;<span class='label' style='background:blue'><a href='#' style='color:white;' data-toggle='tooltip' data-original-title='企業會員-".$re["company"]."'>企</a></span>";
+                                                    }                                               
+                                                ?>                                                
+                                                </div>
+                                            </td>
+                                            <td class="center"><?php echo $re["mem_sex"]; ?></td>
+                                            <td class="center">
+                                                <?php echo $re["mem_by"]; ?>/<?php echo $re["mem_bm"]; ?>/<?php echo $re["mem_bd"]; ?>
+                                                <?php 
+                                                    if($re["mem_by"] != ""){
+                                                        echo "　　".(date("Y")-$re["mem_by"])." 歲";
+                                                    }
+                                                ?>                                               
+                                            </td>
+								            <td class="center"><?php echo $re["mem_school"]; ?></td>
+                                            <td class="center">
+                                                <?php 
+                                                    if($re["mem_branch"] != ""){
+                                                        $mem_single = "<font color=green>受理：</font>".$re["mem_branch"]. " - " . SingleName($re["mem_single"],"normal");
+                                                    }else{
+                                                        $mem_single = "";
+                                                    }
+                                                    if($re["love_single"] != ""){
+                                                        $love_single = "<br><font color=green>排約：</font>". SingleName($re["love_single"],"normal");
+                                                    }else{
+                                                        $love_single = "";
+                                                    }
+                                                    if($re["call_branch"] != ""){
+                                                        $call_single = "<br><font color=green>邀約：</font>".$re["call_branch"]. " - ". SingleName($re["call_single"],"normal");
+                                                    }else{
+                                                        $call_single = "";
+                                                    }
+                                                    if($re["mem_come3"] != ""){
+                                                        $sup_single = "<br><font color=green>推薦：</font>".$re["mem_come3"]. " - ". SingleName($re["mem_come4"],"normal");
+                                                    }else{
+                                                        $sup_single = "";
+                                                    }
+                                                    if($re["keyin_single"] != ""){
+                                                        $keyin_single = "<br><font color=blue>輸入：</font>". SingleName($re["keyin_single"],"normal");
+                                                    }else{
+                                                        $keyin_single = "";
+                                                    }
+                                                    if($re["del_mask"] != ""){
+                                                        $del_single = "<br><font color=red>刪除：</font>". SingleName($re["del_mask"],"normal")."<small>(".Date_EN($re["del_mask_time"],9).")</small>";
+                                                    }else{
+                                                        $del_single = "";
+                                                    }
+                                                    echo $mem_single.$love_single.$call_single.$sup_single.$keyin_single.$del_single;   
+                                                ?>
+                                            </td>
+                                            <td class="center">
+                                                <?php 
+                                                    $mem_photo = $re["mem_photo"];
+                                                    if($mem_photo != "" && strpos($mem_photo,"boy.") == false && strpos($mem_photo,"girl.") == false){
+                                                        if(strpos($mem_photo,"photo/") > 0){
+                                                            echo "<a href='dphoto/".$mem_photo."?t=".rand(1,9999)."' class='fancybox'><img src='dphoto/".$mem_photo."?t=".rand(1,9999)."' width='100'></a>";
+                                                        }else{
+                                                            echo "<a href='../photo/".$mem_photo."?t=".rand(1,9999)."' class='fancybox'><img src='../photo/".$mem_photo."?t=".rand(1,9999)."' width='100'></a>";
+                                                        }
+                                                    }else{
+                                                        $nopic = 1;
+                                                        echo "無";
+                                                    }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                    if($re["singleparty_hot"] == "1"){
+                                                        echo "<a href='#r' onclick='cancel($(this), '".$re["mem_num"]."')' class='btn btn-info'>取消展示</a>";
+                                                    }elseif($nopic == 1){
+                                                        echo "<a href='#' class='btn btn-primary disabled'>無照片</a>";
+                                                    }else{
+                                                        echo "<a href='#r' onclick='agree($(this), '".$re["mem_num"]."')' class='btn btn-success'>通過</a>";
+                                                    }
+                                                    echo "<a href='#r' onclick='remove($(this), '".$re["mem_num"]."')' class='btn btn-danger'>移除</a>";
+                                                ?>
+                                            </td>
+                                        </tr>
+                                    <?php }
+                                }else{
+                                    echo "<tr><td colspan=5>目前無資料</td></tr>";                                    
+                                }
+                            ?>                           
                         </tbody>
                     </table>
                 </div>
-                <div class="text-center">共 98 筆、第 1 頁／共 2 頁&nbsp;&nbsp;
-                    <ul class='pagination pagination-md'>
-                        <li><a href=/singleweb_fun17.php?topage=1>第一頁</a></li>
-                        <li class='active'><a href="#">1</a></li>
-                        <li><a href=/singleweb_fun17.php?topage=2 class='text'>2</a></li>
-                        <li><a href=/singleweb_fun17.php?topage=2 class='text' title='Next'>下一頁</a></li>
-                        <li><a href=/singleweb_fun17.php?topage=2 class='text'>最後一頁</a></li>
-                        <li><select style="width:60px;height:34px;margin-left:5px;" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
-                                <option value="/singleweb_fun17.php?topage=1" selected>1</option>
-                                <option value="/singleweb_fun17.php?topage=2">2</option>
-                            </select></li>
-                    </ul>
-                </div>
-
+                <!-- 頁碼 -->
+                <?php require_once("./include/_page.php"); ?>
             </div>
             <!--/span-->
         </div>

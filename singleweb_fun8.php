@@ -1,6 +1,71 @@
 <?php
-require("./include/_top.php");
-require("./include/_sidebar.php");
+/*****************************************/
+//檔案名稱：singleweb_fun7.php
+//後台對應位置：約會專家系統/主題約會-Banner 手機版
+//改版日期：2022.5.25
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
+
+require_once("_inc.php");
+require_once("./include/_function.php");
+require_once("./include/_top.php");
+require_once("./include/_sidebar_single.php");
+
+//程式開始 *****
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
+}
+
+// 圖片上移
+if($_REQUEST["st"] == "mup"){
+	$nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+	$upline = $nowline+1;
+	$SQL = "update si_webdata set i1=".$nowline." where i1='".$upline."'";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+	$SQL = "update si_webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")."";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+
+	reURL("singleweb_fun8.php");
+}
+
+// 圖片下移
+if($_REQUEST["st"] == "mdo"){
+	$nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+	$upline = $nowline-1;
+	$SQL = "update si_webdata set i1=".$nowline." where i1=".$upline."";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+	$SQL = "update si_webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")."";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+
+	reURL("singleweb_fun8.php");
+}
+
+// 刪除圖片(待測試)
+if($_REQUEST["st"] == "del"){
+	$SQL = "select d2 from si_webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='event_banner_mobile'";
+	$rs = $SPConn->prepare($SQL);
+	$rs->execute();
+	$result = $rs->fetch(PDO::FETCH_ASSOC);
+	if($result){
+		DelFile(("singleparty_image/event/".$result["d2"]));
+		$SQL = "delete from si_webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='event_banner_mobile'";
+		$rs = $SPConn->prepare($SQL);
+		$rs->execute();
+		if($rs){
+			reURL("singleweb_fun8.php");
+		}
+	}        
+}
+
 ?>
 
 <!-- MIDDLE -->
@@ -36,92 +101,40 @@ require("./include/_sidebar.php");
                             <th width="160">資料時間</th>
                             <th>操作</th>
                         </tr>
-
-                        <tr>
-                            <td><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=3843&i1=18"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="singleparty_image/event/event_banner_mobile_202110110294326.jpg" class="fancybox"><img src="singleparty_image/event/event_banner_mobile_202110110294326.jpg" border=0 height=40></a></td>
-                            <td>https://www.singleparty.com.tw/eventdetail.php?id=13333</td>
-                            <td></td>
-                            <td>2021/10/20 下午 02:37:34</td>
-                            <td>
-                                <a href="javascript:Mars_popup('singleweb_fun8_add.php?an=3843','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="singleweb_fun8.php?st=del&an=3843">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=3850&i1=16"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=3850&i1=16"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="singleparty_image/event/event_banner_mobile_20211079572260.jpg" class="fancybox"><img src="singleparty_image/event/event_banner_mobile_20211079572260.jpg" border=0 height=40></a></td>
-                            <td>https://www.singleparty.com.tw/eventdetail.php?id=13272</td>
-                            <td></td>
-                            <td>2021/10/7 上午 09:57:22</td>
-                            <td>
-                                <a href="javascript:Mars_popup('singleweb_fun8_add.php?an=3850','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="singleweb_fun8.php?st=del&an=3850">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=3854&i1=15"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=3854&i1=15"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="singleparty_image/event/event_banner_mobile_202110141174932.jpg" class="fancybox"><img src="singleparty_image/event/event_banner_mobile_202110141174932.jpg" border=0 height=40></a></td>
-                            <td>https://www.singleparty.com.tw/eventdetail.php?id=13203</td>
-                            <td></td>
-                            <td>2021/10/14 上午 11:07:49</td>
-                            <td>
-                                <a href="javascript:Mars_popup('singleweb_fun8_add.php?an=3854','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="singleweb_fun8.php?st=del&an=3854">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=3852&i1=14"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=3852&i1=14"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="singleparty_image/event/event_banner_mobile_202110141151283.jpg" class="fancybox"><img src="singleparty_image/event/event_banner_mobile_202110141151283.jpg" border=0 height=40></a></td>
-                            <td>https://www.singleparty.com.tw/eventdetail.php?id=13297</td>
-                            <td></td>
-                            <td>2021/10/14 上午 11:05:12</td>
-                            <td>
-                                <a href="javascript:Mars_popup('singleweb_fun8_add.php?an=3852','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="singleweb_fun8.php?st=del&an=3852">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=3856&i1=13"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=3856&i1=13"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="singleparty_image/event/event_banner_mobile_2021101411103966.jpg" class="fancybox"><img src="singleparty_image/event/event_banner_mobile_2021101411103966.jpg" border=0 height=40></a></td>
-                            <td>https://www.singleparty.com.tw/eventdetail.php?id=13249</td>
-                            <td></td>
-                            <td>2021/10/14 上午 11:10:39</td>
-                            <td>
-                                <a href="javascript:Mars_popup('singleweb_fun8_add.php?an=3856','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="singleweb_fun8.php?st=del&an=3856">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=166&i1=10"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=166&i1=10"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="singleparty_image/event/event_banner_mobile_166.jpg" class="fancybox"><img src="singleparty_image/event/event_banner_mobile_166.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/20170908.php?cc=SP_officialwebsite_m_homepage</td>
-                            <td></td>
-                            <td>2018/3/12 下午 05:32:46</td>
-                            <td>
-                                <a href="javascript:Mars_popup('singleweb_fun8_add.php?an=166','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="singleweb_fun8.php?st=del&an=166">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=165&i1=8"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="#nu" onclick="alert('無法向下');"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="singleparty_image/event/event_banner_mobile_165.jpg" class="fancybox"><img src="singleparty_image/event/event_banner_mobile_165.jpg" border=0 height=40></a></td>
-                            <td>https://www.springclub.com.tw/20180301/?cc=SP_officialwebsite_m_homepage</td>
-                            <td></td>
-                            <td>2018/3/12 下午 05:13:27</td>
-                            <td>
-                                <a href="javascript:Mars_popup('singleweb_fun8_add.php?an=165','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="singleweb_fun8.php?st=del&an=165">刪除</a>
-                            </td>
-                        </tr>
-
-
+                        <?php 
+                            $SQL = "SELECT * FROM si_webdata where types='event_banner_mobile' order by i1 desc";
+                            $rs = $SPConn->prepare($SQL);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){
+                                $ii = 0;
+                                foreach($result as $re){
+                                    if($ii == 0){
+                                        $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                    }else{
+                                        $uahref = "?st=mup&an=".$re["auton"]."&i1=".$re["i1"];
+                                    }                                   
+                                    if($ii == count($result)-1){
+                                        $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                    }else{
+                                        $dahref = "?st=mdo&an=".$re["auton"]."&i1=".$re["i1"];
+                                    } ?>
+                                    <tr>
+                                        <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>
+                                        <td><a href="singleparty_image/event/<?php echo $re["d2"] ?>" class="fancybox"><img src="singleparty_image/event/<?php echo $re["d2"] ?>" border=0 height=40></a></td>
+                                        <td><?php echo $re["d1"] ?></td>
+                                        <td><?php echo $re["alt"] ?></td>
+                                        <td><?php echo changeDate($re["t1"]) ?></td>
+                                        <td>
+                                            <a href="javascript:Mars_popup('singleweb_fun8_add.php?an=<?php echo $re["auton"] ?>','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
+                                            <a title="刪除" href="singleweb_fun8.php?st=del&an=<?php echo $re["auton"] ?>">刪除</a>						
+                                        </td>
+                                    </tr>
+                                <?php $ii = $ii+1; }   
+                            }else{
+                                echo "<tr><td colspan=4>目前無資料</td></tr>";
+                            }
+                        ?>
                     </tbody>
                 </table>
             </div>
@@ -136,5 +149,5 @@ require("./include/_sidebar.php");
 <!-- /MIDDLE -->
 
 <?php
-require("./include/_bottom.php");
+require_once("./include/_bottom.php");
 ?>

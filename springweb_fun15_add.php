@@ -47,11 +47,11 @@
 				$fullpic = $result["fullpic"];
                 if($fullpic != ""){
                     // 圖檔名稱用','連接一起
-                    $SQL = "UPDATE ad_salon SET fullpic='".($fullpic.",".$fileName)."' where ads_auto=".SqlFilter($_REQUEST["id"],"int");
+                    $SQL = "UPDATE ad_salon SET fullpic='".($fullpic.",".$fileName)."' where ads_auto=".$id;
                     $rs = $SPConn->prepare($SQL);
 			        $rs->execute();
                 }else{
-                    $SQL = "UPDATE ad_salon SET fullpic='".$fileName."' where ads_auto=".SqlFilter($_REQUEST["id"],"int");
+                    $SQL = "UPDATE ad_salon SET fullpic='".$fileName."' where ads_auto=".$id;
                     $rs = $SPConn->prepare($SQL);
 			        $rs->execute();
                 }

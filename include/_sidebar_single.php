@@ -21,9 +21,9 @@
             <li><a href="singleweb_fun7.php"><i class="main-icon fa fa-list-alt"></i><span> 主題約會-BANNER 電腦版</span></a></li>	
             <li><a href="singleweb_fun8.php"><i class="main-icon fa fa-list-alt"></i><span> 主題約會-BANNER 手機版</span></a></li>	
             
-            <li><a href="singleweb_fun11.php"><i class="main-icon fa fa-list-alt"></i><span> 優惠卷-BANNER 電腦版</span></a></li>						
+            <!-- <li><a href="singleweb_fun11.php"><i class="main-icon fa fa-list-alt"></i><span> 優惠卷-BANNER 電腦版</span></a></li>						
             <li><a href="singleweb_fun12.php"><i class="main-icon fa fa-list-alt"></i><span> 優惠卷-BANNER 手機版</span></a></li>						
-            <li><a href="singleweb_fun13.php"><i class="main-icon fa fa-list-alt"></i><span> 優惠卷管理</span></a></li>
+            <li><a href="singleweb_fun13.php"><i class="main-icon fa fa-list-alt"></i><span> 優惠卷管理</span></a></li> -->
             
             <li><a href="singleweb_fun15.php"><i class="main-icon fa fa-list-alt"></i><span> 禮物管理</span></a></li>
             

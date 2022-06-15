@@ -23,7 +23,7 @@
 
     //刪除圖檔(待測)
 	if($_REQUEST["st"] == "delpic"){
-		$urlpath = "webfile/springclub/blog/image";
+		$urlpath = "webfile/springclub/blog/image/";
        DelFile($urlpath.SqlFilter($_REQUEST["p"],"tab")); //刪除圖檔
 		$SQL = "select fullpic from bloglist where auton=".SqlFilter($_REQUEST["id"],"int")."";
 		$rs = $SPConn->prepare($SQL);
@@ -36,7 +36,7 @@
                     $fullpic = $fullpic.",";
                     $fullpic = str_ireplace(SqlFilter($_REQUEST["p"],"tab"),"",$fullpic);
                 }else{
-                    $fullpic = NULL;
+                    $fullpic = "";
                 }
                 if(substr($fullpic,-1) === ","){
                     $fullpic = substr($fullpic,0,-1);

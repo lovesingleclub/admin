@@ -25,7 +25,7 @@ if ($_REQUEST["st"] == "add") {
     if ($_REQUEST["d2"] != "") {
         $d2 = SqlFilter($_REQUEST["d2"], "tab");
     } else {
-        $d2 = NULL;
+        $d2 = "";
     }
     $SQL = "INSERT INTO si_webdata (d1, d2, alt, d3, d4, t1, i1, types) VALUES ('" . SqlFilter($_REQUEST["d1"], "tab") . "','" . $d2 . "','" . SqlFilter($_REQUEST["alt"], "tab") . "','" . SqlFilter($_REQUEST["d3"], "tab") . "','" . SqlFilter($_REQUEST["d4"], "tab") . "','" . date("Y/m/d H:i:s") . "','" . $i1 . "','index_banner_mobile')";
     $rs = $SPConn->prepare($SQL);

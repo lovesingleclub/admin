@@ -46,7 +46,7 @@
             if($_REQUEST["d2"] != ""){
                 $d2 = SqlFilter($_REQUEST["d2"],"tab");
             }else{
-                $d2 = NULL;
+                $d2 = "";
             }
 
             $SQL = "UPDATE webdata SET d1='".SqlFilter($_REQUEST["d1"],"tab")."', d2='".$d2."', alt='".SqlFilter($_REQUEST["alt"],"tab")."', d3='".SqlFilter($_REQUEST["d3"],"tab")."', d4='".SqlFilter($_REQUEST["d4"],"tab")."', t1='".date("Y/m/d H:i:s")."' where auton='".SqlFilter($_REQUEST["an"],"int")."' and types='index_banner_top'";

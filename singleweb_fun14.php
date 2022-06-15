@@ -1,8 +1,96 @@
 <?php
+
+/*****************************************/
+//檔案名稱：singleweb_fun14.php
+//後台對應位置：約會專家系統/企業專區
+//改版日期：2022.5.30
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
+
 require_once("_inc.php");
 require_once("./include/_function.php");
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_single.php");
+
+//程式開始 *****
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
+}
+
+//刪除
+if($_REQUEST["st"] == "del"){
+    $SQL = "delete FROM si_business_contact where auton='".SqlFilter($_REQUEST["an"],"int")."'";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    reURL("win_close.php?m=刪除中...");
+}
+
+// 接收值
+$vst = SqlFilter($_REQUEST["vst"],"tab");
+
+$default_sql_num = 500;
+if($_REQUEST["vst"] == "full"){
+    $sqlv = "*";
+    $sqlv2 = "count(auton)";
+}else{
+    $sqlv = "top ".$default_sql_num." *";
+    $sqlv2 = "count(auton)";
+}
+
+$sqls2 = "SELECT ".$sqlv2." as total_size FROM si_business_contact WHERE 1=1";
+
+//查詢條件
+if($_REQUEST["s99"] != "1"){
+    $sqls2 = $sqls2 . " and (all_note IS NULL)";
+    $all_type = "未處理";
+}else{
+    $sqls2 = $sqls2 . " and not (all_note IS NULL)";
+    $all_type = "已處理";
+}
+
+// 計算總筆數
+$rs = $SPConn->prepare($sqls2);
+$rs->execute();
+$result = $rs->fetch(PDO::FETCH_ASSOC);
+if (!$result){
+    $total_size = 0;
+}else{
+    if( $_REQUEST["vst"] == "full" ){
+        $total_size = $result["total_size"]; //總筆數
+    }else{
+        if($result["total_size"] > 500 ) {
+            $total_size =  500; //限制到500筆
+        }else{
+            $total_size =  $result["total_size"];
+        }   
+    }
+}
+
+$tPage = 1; //目前頁數
+$tPageSize = 50; //每頁幾筆
+if ( $_REQUEST["tPage"] > 1 ){ $tPage = $_REQUEST["tPage"];}
+$tPageTotal = ceil(($total_size/$tPageSize)); //總頁數
+if ( $tPageSize*$tPage < $total_size ){
+    $page2 = 50;
+}else{
+    $page2 = (50-(($tPageSize*$tPage)-$total_size));
+}
+
+//查詢條件
+if($_REQUEST["s99"] != "1"){
+    $sqlss = " and (all_note IS NULL)";
+}else{
+    $sqlss = " and not (all_note IS NULL)";
+}
+
+$sqls = "SELECT " .$sqlv. " FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM si_business_contact WHERE 1 = 1";
+$sqls = $sqls . $sqlss ." order by auton desc ) t1 order by auton) t2 order by auton desc";
+
 ?>
 
 <!-- MIDDLE -->
@@ -23,7 +111,7 @@ require_once("./include/_sidebar.php");
         <div class="panel panel-default">
             <div class="panel-heading">
                 <span class="title elipsis">
-                    <strong>企業專區　未處理 - 數量：5</strong> <!-- panel title -->
+                    <strong>企業專區　未處理 - 數量：<?php echo $total_size; ?></strong> <!-- panel title -->
                 </span>
             </div>
 
@@ -33,16 +121,20 @@ require_once("./include/_sidebar.php");
                     <div class="btn-group">
                         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">功能 <span class="caret"></span></button>
                         <ul class="dropdown-menu">
-
-                            <li><a href="?s99=1" target="_self"><i class="icon-resize-horizontal"></i> 切換已處理</a></li>
-
+                            <?php 
+                                if($all_type == "未處理"){ ?>
+                                    <li><a href="?s99=1" target="_self"><i class="icon-resize-horizontal"></i> 切換已處理</a></li>
+                                <?php }
+                                if($all_type == "已處理"){ ?>
+                                    <li><a href="singleweb_fun14.php" target="_self"><i class="icon-resize-horizontal"></i> 切換未處理</a></li>
+                                <?php }
+                            ?>  
                         </ul>
                     </div>
                     </p>
                 </div>
 
                 <table class="table table-striped table-bordered bootstrap-datatable">
-
                     <thead>
                         <tr>
                             <th>公司名稱</th>
@@ -56,155 +148,55 @@ require_once("./include/_sidebar.php");
                             <th></th>
                             <th></th>
                         </tr>
-
-                        <tr>
-                            <td class="center">跟我約會</td>
-                            <td class="center">交友</td>
-                            <td class="center">約會</td>
-                            <td class="center">c805013@gmail.com</td>
-                            <td class="center">跟我約會</td>
-                            <td class="center">09308850240</td>
-                            <td class="center">forevetw</td>
-                            <td class="center">2018/6/18 下午 03:31:16</td>
-                            <td>
-                                <font color="#FF0000" size="2">處理情形：
-
-                                </font>
-                            </td>
-                            <td width=80 class="center">
-                                <div class="btn-group">
-                                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">操作 <span class="caret"></span></button>
-                                    <ul class="dropdown-menu pull-right">
-                                        <li><a href="javascript:Mars_popup('singleweb_fun14_fix.php?an=10','','status=yes,menubar=yes,scrollbars=yes,resizable=yes,width=500,height=320,top=100,left=100');"><i class="icon-pencil"></i> 處理</a></li>
-
-                                        <li><a href="javascript:Mars_popup2('singleweb_fun14.php?st=del&an=10','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=300,height=200,top=150,left=150');"><i class="icon-trash"></i> 刪除</a></li>
-
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="center">春天會館</td>
-                            <td class="center">約會</td>
-                            <td class="center">聊天小姐</td>
-                            <td class="center">c805013@gmail.com</td>
-                            <td class="center">春天會館</td>
-                            <td class="center">0930850240</td>
-                            <td class="center">http://www.forevertw.com.tw</td>
-                            <td class="center">2018/6/18 下午 03:09:55</td>
-                            <td>
-                                <font color="#FF0000" size="2">處理情形：
-
-                                </font>
-                            </td>
-                            <td width=80 class="center">
-                                <div class="btn-group">
-                                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">操作 <span class="caret"></span></button>
-                                    <ul class="dropdown-menu pull-right">
-                                        <li><a href="javascript:Mars_popup('singleweb_fun14_fix.php?an=9','','status=yes,menubar=yes,scrollbars=yes,resizable=yes,width=500,height=320,top=100,left=100');"><i class="icon-pencil"></i> 處理</a></li>
-
-                                        <li><a href="javascript:Mars_popup2('singleweb_fun14.php?st=del&an=9','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=300,height=200,top=150,left=150');"><i class="icon-trash"></i> 刪除</a></li>
-
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="center">假期國際</td>
-                            <td class="center">專案</td>
-                            <td class="center">PM</td>
-                            <td class="center">wrc555.tw@gmail.com</td>
-                            <td class="center">Ryder Hsu</td>
-                            <td class="center">0932104490</td>
-                            <td class="center">www.vacanza.com.tw</td>
-                            <td class="center">2017/12/21 上午 09:19:30</td>
-                            <td>
-                                <font color="#FF0000" size="2">處理情形：
-
-                                </font>
-                            </td>
-                            <td width=80 class="center">
-                                <div class="btn-group">
-                                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">操作 <span class="caret"></span></button>
-                                    <ul class="dropdown-menu pull-right">
-                                        <li><a href="javascript:Mars_popup('singleweb_fun14_fix.php?an=8','','status=yes,menubar=yes,scrollbars=yes,resizable=yes,width=500,height=320,top=100,left=100');"><i class="icon-pencil"></i> 處理</a></li>
-
-                                        <li><a href="javascript:Mars_popup2('singleweb_fun14.php?st=del&an=8','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=300,height=200,top=150,left=150');"><i class="icon-trash"></i> 刪除</a></li>
-
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="center">假期國際</td>
-                            <td class="center">行銷企劃</td>
-                            <td class="center">專案經理</td>
-                            <td class="center">wrc555.tw@gmail.com</td>
-                            <td class="center">許敦彥</td>
-                            <td class="center">0932104490</td>
-                            <td class="center">www.vacanza.com.tw</td>
-                            <td class="center">2017/8/4 下午 06:00:55</td>
-                            <td>
-                                <font color="#FF0000" size="2">處理情形：
-
-                                </font>
-                            </td>
-                            <td width=80 class="center">
-                                <div class="btn-group">
-                                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">操作 <span class="caret"></span></button>
-                                    <ul class="dropdown-menu pull-right">
-                                        <li><a href="javascript:Mars_popup('singleweb_fun14_fix.php?an=7','','status=yes,menubar=yes,scrollbars=yes,resizable=yes,width=500,height=320,top=100,left=100');"><i class="icon-pencil"></i> 處理</a></li>
-
-                                        <li><a href="javascript:Mars_popup2('singleweb_fun14.php?st=del&an=7','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=300,height=200,top=150,left=150');"><i class="icon-trash"></i> 刪除</a></li>
-
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="center">台灣穗高科技</td>
-                            <td class="center">管理部(職工福利委員會)</td>
-                            <td class="center">總幹事</td>
-                            <td class="center">mandoor_chang@hodakatec.com</td>
-                            <td class="center">張綿鐸</td>
-                            <td class="center">0936655880</td>
-                            <td class="center">http://www.hodakatec.com</td>
-                            <td class="center">2017/7/3 下午 02:00:21</td>
-                            <td>
-                                <font color="#FF0000" size="2">處理情形：
-
-                                </font>
-                            </td>
-                            <td width=80 class="center">
-                                <div class="btn-group">
-                                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">操作 <span class="caret"></span></button>
-                                    <ul class="dropdown-menu pull-right">
-                                        <li><a href="javascript:Mars_popup('singleweb_fun14_fix.php?an=6','','status=yes,menubar=yes,scrollbars=yes,resizable=yes,width=500,height=320,top=100,left=100');"><i class="icon-pencil"></i> 處理</a></li>
-
-                                        <li><a href="javascript:Mars_popup2('singleweb_fun14.php?st=del&an=6','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=300,height=200,top=150,left=150');"><i class="icon-trash"></i> 刪除</a></li>
-
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-
-                        </tbody>
+                    </thead>
+                    <tbody>
+                        <?php 
+                            $rs = $SPConn->prepare($sqls);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){
+                                foreach($result as $re){ ?>
+                                    <tr> 
+                                        <td class="center"><?php echo $re["company"]; ?></td>
+                                        <td class="center"><?php echo $re["department"]; ?></td>
+                                        <td class="center"><?php echo $re["job"]; ?></td>
+                                        <td class="center"><?php echo $re["email"]; ?></td>
+                                        <td class="center"><?php echo $re["name"]; ?></td>
+                                        <td class="center"><?php echo $re["phone"]; ?></td>
+                                        <td class="center"><?php echo $re["url"]; ?></td>
+                                        <td class="center"><?php echo changeDate($re["times"]); ?></td>      
+                                        <td>
+                                            <font color="#FF0000" size="2">處理情形：
+                                            <?php 
+                                                if($re["all_type"] != "未處理"){
+                                                    echo "(".$re["all_type"].")";
+                                                }
+                                                echo $re["all_note"];
+                                            ?>
+                                            </font>
+                                        </td>
+                                        <td width=80 class="center">
+                                            <div class="btn-group">
+                                                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">操作 <span class="caret"></span></button>
+                                                <ul class="dropdown-menu pull-right">
+                                                    <li><a href="javascript:Mars_popup('singleweb_fun14_fix.php?an=<?php echo $re["auton"]; ?>','','status=yes,menubar=yes,scrollbars=yes,resizable=yes,width=500,height=320,top=100,left=100');"><i class="icon-pencil"></i> 處理</a></li>
+                                                    <?php if($_SESSION["MM_UserAuthorization"] == "admin"){ ?>                                                                
+                                                        <li><a href="javascript:Mars_popup2('singleweb_fun14.php?st=del&an=<?php echo $re["auton"]; ?>','','status=yes,menubar=yes,resizable=yes,scrollbars=yes,width=300,height=200,top=150,left=150');"><i class="icon-trash"></i> 刪除</a></li>
+                                                    <?php } ?>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php }
+                            }else{
+                                echo "<tr><td colspan=10 height=200>目前沒有資料</td></tr>";
+                            }
+                        ?>
+                    </tbody>
                 </table>
             </div>
-            <div class="text-center">共 5 筆、第 1 頁／共 1 頁&nbsp;&nbsp;
-                <ul class='pagination pagination-md'>
-                    <li><a href=/singleweb_fun14.php?topage=1>第一頁</a></li>
-                    <li class='active'><a href="#">1</a></li>
-                    <li><a href=/singleweb_fun14.php?topage=1 class='text'>最後一頁</a></li>
-                    <li><select style="width:60px;height:34px;margin-left:5px;" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
-                            <option value="/singleweb_fun14.php?topage=1" selected>1</option>
-                        </select></li>
-                </ul>
-            </div>
+            <!-- 頁碼 -->
+            <?php require_once("./include/_page.php"); ?>
 
         </div>
         <!--/span-->

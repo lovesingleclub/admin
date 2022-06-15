@@ -1,5 +1,100 @@
-<meta charset="utf-8" />
+<?php 
+/*****************************************/
+//檔案名稱：singleweb_fun8_add.php
+//後台對應位置：約會專家系統/主題約會-Banner 手機版>新增BANNER
+//改版日期：2022.5.25
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
 
+require_once("_inc.php");
+require_once("./include/_function.php");
+
+// 新增
+if($_REQUEST["st"] == "add"){
+    $SQL = "SELECT top 1 i1 FROM si_webdata where types='event_banner_mobile' order by i1 desc";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        $i1 = $result["i1"] + 1;
+    }else{
+        $i1 = 1;
+    }
+    if($_REQUEST["d2"] != ""){
+        $d2 = SqlFilter($_REQUEST["d2"],"tab");
+    }else{
+        $d2 = "";
+    }
+    
+    $SQL = "INSERT INTO si_webdata (d1, d2, alt, d3, d4, t1, i1, types) VALUES ('".SqlFilter($_REQUEST["d1"],"tab")."','".$d2."','".SqlFilter($_REQUEST["alt"],"tab")."','".SqlFilter($_REQUEST["d3"],"tab")."','".SqlFilter($_REQUEST["d4"],"tab")."','".date("Y/m/d H:i:s")."','".$i1."','event_banner_mobile')";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+
+    reURL("win_close.php");        
+}
+
+// 更新(有刪除圖檔功能待測)
+if($_REQUEST["st"] == "edit"){
+    $SQL = "SELECT * FROM si_webdata where auton='".SqlFilter($_REQUEST["an"],"int")."' and types='event_banner_mobile'";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){            
+        if($result["d2"] != $_REQUEST["d2"]){
+            DelFile("singleparty_image/event/".$result["d2"]);
+        }
+        if($_REQUEST["d2"] != ""){
+            $d2 = SqlFilter($_REQUEST["d2"],"tab");
+        }else{
+            $d2 = NULL;
+        }
+
+        $SQL = "UPDATE si_webdata SET d1='".SqlFilter($_REQUEST["d1"],"tab")."', d2='".$d2."', alt='".SqlFilter($_REQUEST["alt"],"tab")."', d3='".SqlFilter($_REQUEST["d3"],"tab")."', d4='".SqlFilter($_REQUEST["d4"],"tab")."', t1='".date("Y/m/d H:i:s")."' where auton='".SqlFilter($_REQUEST["an"],"int")."' and types='event_banner_mobile'";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();          
+    }
+    reURL("win_close.php");
+}
+
+// 上傳圖檔(待測)
+if($_REQUEST["st"] == "upload"){
+    if ($_FILES['fileupload']['error'] === UPLOAD_ERR_OK){
+        $urlpath = "singleparty_image/event/"; //儲存路徑
+        $ext = pathinfo($_FILES["fileupload"]["name"], PATHINFO_EXTENSION); //附檔名      
+        $fileName = "event_banner_mobile_".date("Y").date("n").date("j").date("H").date("i").date("s").rand(1,99).".".$ext; //檔名
+        move_uploaded_file($_FILES["fileupload"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
+        echo $fileName;
+        exit();
+    }
+}
+
+if($_REQUEST["an"] != ""){
+    $vst = "edit&an=".SqlFilter($_REQUEST["an"],"int");
+    $SQL = "SELECT * FROM si_webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='event_banner_mobile'";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){ 
+        $d1 = $result["d1"];
+        $img = $result["d2"];
+        $d3 = $result["d3"];
+        $d4 = $result["d4"];
+        $alt = $result["alt"];
+    }
+}else{
+    $vst = "add";
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>約會專家系統</title>
+</head>
+<body>
 <script src="js/jquery-1.8.3.js"></script>
 <script src="js/jquery-ui.min.js"></script>
 <script src="js/jquery.fileupload.js"></script>
@@ -16,26 +111,31 @@
 </noscript>
 
 <p></p>
-<form id="fun_form" method="post" action="singleweb_fun8_add.asp?st=add" onsubmit="return chk_form()">
+<form id="fun_form" method="post" action="singleweb_fun8_add.php?st=<?php echo $vst; ?>" onsubmit="return chk_form()">
     <p>
         <label>連結位置：
-            <input type="text" id="d1" name="d1" value="" style="width:40%;height:26px;" required></label>
+            <input type="text" id="d1" name="d1" value="<?php echo $d1; ?>" style="width:40%;height:26px;" required></label>
         <label>ALT：
-            <input type="text" id="alt" name="alt" value="" style="width:40%;height:26px;"></label>
+            <input type="text" id="alt" name="alt" value="<?php echo $alt; ?>" style="width:40%;height:26px;"></label>
     </p>
     <p>
         <label>展示圖檔(690x330)：</label>
-
-
     <div>
-        <img id="show_img" src="img/lovepy_noimg.jpg" height=80>
+        <?php 
+            if($img != ""){
+                $imgsrc = "singleparty_image/event/".$img."?t=".rand(1,9999);
+            }else{
+                $imgsrc = "img/lovepy_noimg.jpg";
+            }
+        ?>
+        <img id="show_img" src="<?php echo $imgsrc; ?>" height=80>
         <span class="btn btn-info fileinput-button"><span>選擇檔案</span><input data-no-uniform="true" id="fileupload" type="file" class="fileupload" name="fileupload"></span>
         <div id="progress" class="progress progress-striped" style="display:none">
             <div class="bar progress-bar progress-bar-lovepy"></div>
         </div>
     </div>
     <div id="fileupload_show"></div>
-    <input type="hidden" name="d2" id="d2" value="">
+    <input type="hidden" name="d2" id="d2" value="<?php echo $img; ?>">
     </p>
 
     </div>
@@ -61,7 +161,7 @@
             var $imgs = $(this).closest("span").find("#cimg").val();
 
             $this.fileupload({
-                    url: "singleweb_fun8_add.asp?st=upload&an=",
+                    url: "singleweb_fun8_add.php?st=upload&an=<?php echo SqlFilter($_REQUEST["an"],"int"); ?>",
                     type: "POST",
                     dropZone: $this,
                     dataType: 'html',
@@ -118,13 +218,13 @@
     				'multi'    : false,
     				'method'   : 'get',
     				'swf'      : 'js/uploadify.swf',
-    				'uploader' : 'springweb_fun1_add.asp?st=upload&an=',
+    				'uploader' : 'springweb_fun1_add.php?st=upload&an=<?php echo SqlFilter($_REQUEST["an"],"int"); ?>',
     				'removeCompleted' : true,
     				'fileTypeExts' : '*.gif; *.jpg;',
     				'fileTypeDesc' : '請選擇 jpg, gif 檔案',
     				'fileSizeLimit': '1000KB',
             'onUploadSuccess' : function(file, data, response) {
-    		  location.href='win_close.asp?m=上傳完成';
+    		  location.href='win_close.php?m=上傳完成';
             },
             'onSelect' : function(file) {
              var d1v=$('#d1').val();      
@@ -175,11 +275,13 @@
     		  }
     		  $.ajax({
     		  type: "POST",
-          url: "springweb_fun1_add.asp",
-          data: { st: "ups", d1: $d1, an: "" }
+          url: "springweb_fun1_add.php",
+          data: { st: "ups", d1: $d1, an: "<?php echo SqlFilter($_REQUEST["an"],"int"); ?>" }
           }).done(function() {
             location.reload();
           });
     	  });
     });*/
 </script>
+</body>
+</html>
