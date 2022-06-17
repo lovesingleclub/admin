@@ -52,7 +52,7 @@ if($_REQUEST["st"] == "del"){
     $rs->execute();
     $result = $rs->fetch(PDO::FETCH_ASSOC);
     if($result){
-        DelFile("singleparty_image/salon/".$re["ads_pic1"]); //刪除圖片 
+        DelFile("singleparty_image/salon/".$result["ads_pic1"]); //刪除圖片 
     }
 
     $SQL = "delete from si_salon_teacher where auton=".SqlFilter($_REQUEST["id"],"int")."";

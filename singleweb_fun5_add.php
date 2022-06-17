@@ -108,7 +108,7 @@ if($_REQUEST["st"] == "delpic"){
                $fullpic = $fullpic .",";
                $fullpic = str_replace(($_REQUEST["p"].","),"",$fullpic);
             }else{
-                $fullpic = NULL;
+                $fullpic = "";
             }
             if(substr($fullpic,-1) == ","){
                 $fullpic = substr($fullpic,0,-1);

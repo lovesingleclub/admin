@@ -1,10 +1,211 @@
 <?php
+
+/*****************************************/
+//檔案名稱：singleweb_fun19_add.php
+//後台對應位置：約會專家系統/部落格>新增修改部落格文章
+//改版日期：2022.6.17
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
+
 require_once("_inc.php");
 require_once("./include/_function.php");
+// ajax
+if($_REQUEST["st"] == "reload_div"){
+    $SQL = "select fullpic from si_blog where auton=".SqlFilter($_REQUEST["id"],"int")."";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        $fullpic = $result["fullpic"];
+        if($fullpic != ""){
+            if(stripos($fullpic,",") != false){
+                foreach(explode(",",$fullpic) as $pic){
+                    echo "<p style='height:22px'>https://blog.singleparty.com.tw/assets/img/".$pic."　<a href='#delpic' onclick=\"del_pic('".$pic."')\">刪</a>　<a href='https://blog.singleparty.com.tw/assets/img/".$pic."' class='fancybox'>圖</a></p>".PHP_EOL;
+                }
+            }else{
+                echo "<p style='height:22px'>https://blog.singleparty.com.tw/assets/img/".$fullpic."　<a href='#delpic' onclick=\"del_pic('".$fullpic."')\">刪</a>　<a href='https://blog.singleparty.com.tw/assets/img/".$fullpic."' class='fancybox'>圖</a></p>".PHP_EOL;
+            }
+        }
+    }
+    exit();
+}
+
+// ajax上傳圖檔2(待測)
+if($_REQUEST["st"] == "upload2"){
+    $id = SqlFilter($_REQUEST["id"],"int");
+    if ($_FILES['fileupload2']['error'] === UPLOAD_ERR_OK){
+        $urlpath = "singleparty_blog/"; //儲存路徑
+        $ext = pathinfo($_FILES["fileupload2"]["name"], PATHINFO_EXTENSION); //附檔名      
+        $fileName = date("Y").date("n").date("j").date("H").date("i").date("s")."_blog_".rand(1,1000).".".$ext; //檔名
+        move_uploaded_file($_FILES["fileupload2"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
+        
+        $SQL = "select * from si_blog where auton=".$id."";
+        $rs = $SPConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            $fullpic = $result["fullpic"];
+            if($fullpic != ""){
+                // 圖檔名稱用','連接一起
+                $SQL = "UPDATE si_blog SET fullpic='".($fullpic.",".$fileName)."' where auton=".$id;
+                $rs = $SPConn->prepare($SQL);
+                $rs->execute();
+            }else{
+                $SQL = "UPDATE si_blog SET fullpic='".$fileName."' where auton=".$id;
+                $rs = $SPConn->prepare($SQL);
+                $rs->execute();
+            }
+        }
+
+        echo $id;        	        
+    }
+    exit(); 
+}
+
+// ajax上傳跟刪除圖檔(待測)
+if($_REQUEST["st"] == "upload"){
+    $pic = SqlFilter($_REQUEST["pic"],"tab");
+    if ($_FILES['fileupload']['error'] === UPLOAD_ERR_OK){
+        $urlpath = "singleparty_blog/"; //儲存路徑
+        $ext = pathinfo($_FILES["fileupload"]["name"], PATHINFO_EXTENSION); //附檔名      
+        $fileName = date("Y").date("n").date("j").date("H").date("i").date("s")."_blog_".rand(1,1000).".".$ext; //檔名
+        move_uploaded_file($_FILES["fileupload"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
+        
+        if($fileName != "" && $pic != ""){
+            DelFile($urlpath.$pic);
+        }
+
+        echo $fileName;        	        
+    }
+    exit(); 
+}
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_single.php");
+
+//程式開始 *****
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
+}
+
+// 刪除圖片功能(待測)
+if($_REQUEST["st"] == "delpic"){
+    $urlpath = "singleparty_blog/";
+    DelFile($urlpath.SqlFilter($_REQUEST["p"],"tab"));
+
+    $SQL = "select fullpic from si_blog where auton=".SqlFilter($_REQUEST["id"],"int");
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        $fullpic = $result["fullpic"];
+        if($fullpic != ""){
+            if(stripos($fullpic,",") != false){
+               $fullpic = $fullpic .",";
+               $fullpic = str_replace(($_REQUEST["p"].","),"",$fullpic);
+            }else{
+                $fullpic = "";
+            }
+            if(substr($fullpic,-1) == ","){
+                $fullpic = substr($fullpic,0,-1);
+            }
+            $SQL = "UPDATE si_blog SET fullpic='".$fullpic."' where auton=".SqlFilter($_REQUEST["id"],"int");
+            $rs = $SPConn->prepare($SQL);
+            $rs->execute();
+        }
+    }
+}
+
+$notes = str_replace("<br>",PHP_EOL,$_REQUEST["notes"]);
+$notes = str_replace("<!DOCTYPE html><html><head></head><body><p>", "",$notes);
+$notes = str_replace("</p></body></html>", "",$notes);
+
+// 新增
+if($_REQUEST["acts"] == "ad"){
+    $SQL = "select top 1 t_desc from si_blog order by t_desc desc";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        $ltd = $result["t_desc"] + 1;
+    }
+
+    if($_REQUEST["tag"] != ""){
+        $tag = str_replace(" ","",SqlFilter($_REQUEST["tag"],"tab"));
+    }else{
+        $tag = "";
+    }
+    $SQL = "INSERT INTO si_blog (title, author, notes, times, t_desc, showtime, tag, pic) VALUES ('". SqlFilter($_REQUEST["title"],"tab") ."','". SqlFilter($_REQUEST["author"],"tab") ."','". $notes."','".date("Y/m/d H:i:s")."','".$ltd."','".SqlFilter($_REQUEST["showtime"],"tab")."','".$tag."','".SqlFilter($_REQUEST["pic"],"tab")."')";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    
+    reURL("singleweb_fun19.php");
+}
+
+// 更新
+if($_REQUEST["acts"] == "up"){
+    if($_REQUEST["tag"] != ""){
+        $tag = str_replace(" ","",SqlFilter($_REQUEST["tag"],"tab"));
+    }else{
+        $tag = "";
+    }
+    $SQL = "update si_blog set title = '". SqlFilter($_REQUEST["title"],"tab") ."',author = '". SqlFilter($_REQUEST["author"],"tab") ."',notes = '".$notes."', showtime='". SqlFilter($_REQUEST["showtime"],"tab") ."', tag='".$tag."'";
+    $SQL = $SQL . ",pic='".SqlFilter($_REQUEST["pic"],"tab")."' where auton = ". SqlFilter($_REQUEST["pid"],"int") ."";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    
+    reURL("singleweb_fun19.php");
+}
+
+$nows = date("Y/m/d H:i:s");
+
+if($_REQUEST["a"] != ""){
+    $SQL = "Select * from si_blog where auton = ".SqlFilter($_REQUEST["a"],"int")."";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        $tag = $result["tag"];
+        $title = $result["title"];     
+        $author = $result["author"];     
+	    $pic = $result["pic"];	    
+        $showtime = $result["showtime"];
+	    $nows = $result["times"];
+        $notes = $result["notes"];
+        if($notes != ""){
+            $notes = str_replace("<br>",PHP_EOL,$notes);
+        }
+        
+    }
+    $acts = "up";
+}else{
+    $acts = "ad";
+}
+
+$SQL = "SELECT * FROM si_webdata where types='blog_tag' order by t1 desc";
+$rs = $SPConn->prepare($SQL);
+$rs->execute();
+$result = $rs->fetchAll(PDO::FETCH_ASSOC);
+if($result){
+    foreach($result as $re){
+        $alltag = $alltag . "," .$re["d1"];
+    }    
+}
+
+if(substr($alltag,0,1) == ","){    
+    $alltag = substr($alltag,1,(strlen($alltag)-1));
+}
+
 ?>
 
+<link rel="stylesheet" href="css/jquery.fileupload.css">
+<link rel="stylesheet" href="css/jquery.fileupload-ui.css">
+<noscript><link rel="stylesheet" href="css/jquery.fileupload-noscript.css"></noscript>
+<noscript><link rel="stylesheet" href="css/jquery.fileupload-ui-noscript.css"></noscript>
 <!-- MIDDLE -->
 <section id="middle">
     <!-- page title -->
@@ -33,26 +234,33 @@ require_once("./include/_sidebar.php");
                         <tbody>
                             <tr>
                                 <td width="150" align="left" valign="middle">分類</td>
-                                <td><select name="tag" id="tag" style="width:60%" class="select2" multiple>
+                                <td>
+                                    <select name="tag" id="tag" style="width:60%" class="select2" multiple>
                                         <option value="">請選擇</option>
-                                        <option value="兩性相處">兩性相處</option>
-                                        <option value="脫單策略">脫單策略</option>
-                                        <option value="戀愛ing">戀愛ing</option>
-                                        <option value="約會技巧">約會技巧</option>
-                                    </select></td>
+                                        <?php 
+                                            foreach(explode(",",$alltag) as $onetag){
+                                                if($tag == $onetag){
+                                                    echo "<option value='".$onetag."' selected>".$onetag."</option>";
+                                                }else{
+                                                    echo "<option value='".$onetag."'>".$onetag."</option>";
+                                                }
+                                            }
+                                        ?>
+                                    </select>
+                                </td>
                             </tr>
                             <tr>
                             <tr>
                                 <td width="150" align="left" valign="middle">標題</td>
-                                <td><input name="title" id="title" value="" class="form-control" style="width:60%;" required></td>
+                                <td><input name="title" id="title" value="<?php echo $title; ?>" class="form-control" style="width:60%;" required></td>
                             </tr>
                             <tr>
                                 <td width="150" align="left" valign="middle">作者</td>
-                                <td><input name="author" id="author" class="form-control" value=""></td>
+                                <td><input name="author" id="author" class="form-control" value="<?php echo $author; ?>"></td>
                             </tr>
                             <tr>
                                 <td width="150" align="left" valign="middle">日期</td>
-                                <td colspan=3><input name="showtime" id="showtime" value="" class="datepicker" autocomplete="off" required></td>
+                                <td colspan=3><input name="showtime" id="showtime" value="<?php echo Date_EN($showtime,1); ?>" class="datepicker" autocomplete="off" required></td>
                             </tr>
                             <!--<tr>
 							<td width="150" align="left" valign="middle"></td>
@@ -60,14 +268,20 @@ require_once("./include/_sidebar.php");
 							</tr>-->
                             <tr>
                                 <td align="left" valign="middle">建立時間</td>
-                                <td>2021/10/26 上午 11:13:00</td>
+                                <td><?php echo changeDate($nows); ?></td>
                             </tr>
                             <tr>
                                 <td align="left" valign="middle">上傳圖檔</td>
                                 <td>
-
+                                    <?php 
+                                        if($pic != ""){
+                                            $img = "<a href=\"singleparty_image/salon/". $pic ."\" class='fancybox'><img src='singleparty_blog/". $pic ."' width=250 border=0></a>";
+                                        }else{
+                                            $img = "";
+                                        }
+                                    ?>
                                     <div id="img_div">
-
+                                        <?php echo $img; ?>
                                     </div>
                                     <div>
                                         <span class="btn btn-danger fileinput-button"><span>上傳檔案</span><input id="file_uploads1" type="file" class="fileupload" name="fileupload"></span>
@@ -80,11 +294,11 @@ require_once("./include/_sidebar.php");
                             </tr>
                             <tr>
                                 <td align="left" valign="middle">內文</td>
-                                <td><textarea name="notes" class="editor" style="width:80%;height:350px;"></textarea></td>
+                                <td><textarea name="notes" class="editor" style="width:80%;height:350px;"><?php echo $notes; ?></textarea></td>
                             </tr>
                             <tr>
                                 <td></td>
-                                <td align="center"><input name="pic" id="pic" type="hidden" value=""><input name="acts" id="acts" type="hidden" value="ad"><input name="pid" type="hidden" id="pid" value="">
+                                <td align="center"><input name="pic" id="pic" type="hidden" value="<?php echo $pic; ?>"><input name="acts" id="acts" type="hidden" value="<?php echo $acts ?>"><input name="pid" type="hidden" id="pid" value="<?php echo SqlFilter($_REQUEST["a"],"int"); ?>">
                                     <input type="submit" value="確認送出" class="btn btn-info" style="width:50%;">
                                 </td>
                             </tr>
@@ -92,7 +306,17 @@ require_once("./include/_sidebar.php");
                         </tbody>
                     </table>
                 </form>
-
+                <?php 
+                    if($_REQUEST["a"] != ""){ ?>
+                        <div>
+                            <div id="reload_showtopdiv"></div>
+                            <div>
+                                <span class="btn btn-danger fileinput-button"><span>內文用圖片上傳</span><input id="file_uploads2" type="file" class="fileupload" name="fileupload2"></span>
+                                <div id="progress" class="progress progress-striped" style="display:none"><div class="bar progress-bar progress-bar-lovepy"></div></div>
+                            </div>
+                        </div>
+                    <?php }
+                ?>
             </div>
         </div>
         <!--/span-->
@@ -129,7 +353,7 @@ require_once("./include/_bottom.php");
             url: 'singleweb_fun19_add.php',
             data: {
                 st: "delpic",
-                id: '',
+                id: '<?php echo SqlFilter($_REQUEST["a"],"int"); ?>',
                 p: p
             },
             error: function(xhr) {
@@ -148,7 +372,7 @@ require_once("./include/_bottom.php");
             url: 'singleweb_fun19_add.php',
             data: {
                 st: "reload_div",
-                id: ''
+                id: '<?php echo SqlFilter($_REQUEST["a"],"int"); ?>'
             },
             error: function(xhr) {
                 alert('Ajax request 發生錯誤1x');
@@ -168,7 +392,7 @@ require_once("./include/_bottom.php");
         var $imgs = $file_uploads1.closest("span").find("#cimg").val();
 
         $file_uploads1.fileupload({
-                url: "singleweb_fun19_add.php?st=upload&pic=",
+                url: "singleweb_fun19_add.php?st=upload&pic=<?php echo $pic; ?>",
                 type: "POST",
                 dropZone: $file_uploads1,
                 dataType: 'html',
@@ -219,7 +443,7 @@ require_once("./include/_bottom.php");
         var $imgs = $file_uploads2.closest("span").find("#cimg").val();
 
         $file_uploads2.fileupload({
-                url: "singleweb_fun19_add.php?st=upload2&id=",
+                url: "singleweb_fun19_add.php?st=upload2&id=<?php echo SqlFilter($_REQUEST["a"],"int"); ?>",
                 type: "POST",
                 dropZone: $file_uploads2,
                 dataType: 'html',

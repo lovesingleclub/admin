@@ -28,7 +28,7 @@
         $rs->execute();
         $result = $rs->fetch(PDO::FETCH_ASSOC);
         if($result){
-            DelFile("upload_image".$result["d2"]);
+            DelFile("upload_image/".$result["d2"]);
             $SQL = "UPDATE webdata SET d2=NULL where auton=".SqlFilter($_REQUEST["an"],"int")." and types='actiondownload'";
             $rs = $SPConn->prepare($SQL);
             $rs->execute();

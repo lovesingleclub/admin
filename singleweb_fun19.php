@@ -1,8 +1,77 @@
 <?php
+
+/*****************************************/
+//檔案名稱：singleweb_fun19.php
+//後台對應位置：約會專家系統/部落格
+//改版日期：2022.6.17
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
+
 require_once("_inc.php");
 require_once("./include/_function.php");
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_single.php");
+
+//程式開始 *****
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
+}
+
+// 文章上移
+if($_REQUEST["st"] == "up_line"){
+    $nowline = round(SqlFilter($_REQUEST["ad"],"int"));
+    $upline = $nowline+1;
+    $SQL = "update si_blog set t_desc=".$nowline." where t_desc='".$upline."'";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $SQL = "update si_blog set t_desc=".$upline." where auton=".SqlFilter($_REQUEST["t_auto"],"int")."";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+}
+
+// 文章下移
+if($_REQUEST["st"] == "down_line"){
+    $nowline = round(SqlFilter($_REQUEST["ad"],"int"));
+    $upline = $nowline-1;
+    $SQL = "update si_blog set t_desc=".$nowline." where t_desc=".$upline."";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $SQL = "update si_blog set t_desc=".$upline." where auton=".SqlFilter($_REQUEST["t_auto"],"int")."";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+}
+
+// 刪除文章(有刪除圖片功能待測)
+if($_REQUEST["st"] == "del"){
+    $SQL = "select ads_pic1 from si_blog where auton=".SqlFilter($_REQUEST["a"],"int")."";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        if($result["fullpic"] != ""){
+            if(strpos($result["fullpic"],",") != false){
+                foreach(explode(",",$result["fullpic"]) as $pic){
+                    DelFile("singleparty_blog/".$pic); //刪除圖片 
+                }
+            }else{
+                DelFile("singleparty_blog/".$result["fullpic"]); //刪除圖片 
+            }
+            
+        }        
+    }
+
+    $SQL = "delete from si_blog where auton=".SqlFilter($_REQUEST["a"],"int")."";
+    $rs = $SPConn->prepare($SQL);
+    $rs->execute();
+
+    reURL("win_close.php?m=刪除中.....");
+}
+
 ?>
 
 <!-- MIDDLE -->
@@ -29,60 +98,38 @@ require_once("./include/_sidebar.php");
             <div class="panel-body">
                 <p><a href="singleweb_fun19_add.php" class="btn btn-info">新增文章</a></p>
                 <table class="table table-striped table-bordered bootstrap-datatable">
-                    <tr>
-                        <td width=80><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=9&t_auto=20"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>脫單策略</td>
-                        <td><a href="https://blog.singleparty.com.tw/20" target="_blank">要交男/女朋友從這三件事開始</a></td>
-                        <td width="200"><a href="singleweb_fun19_add.php?t=ed&a=20">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=20','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=8&t_auto=19"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=8&t_auto=19"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>兩性相處,脫單策略,戀愛ing</td>
-                        <td><a href="https://blog.singleparty.com.tw/19" target="_blank">女生沒說，但你需要懂的潛台詞</a></td>
-                        <td width="200"><a href="singleweb_fun19_add.php?t=ed&a=19">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=19','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=7&t_auto=15"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=7&t_auto=15"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>兩性相處,戀愛ing,約會技巧</td>
-                        <td><a href="https://blog.singleparty.com.tw/15" target="_blank">情侶注意這5點，連假出遊不吵架！</a></td>
-                        <td width="200"><a href="singleweb_fun19_add.php?t=ed&a=15">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=15','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=6&t_auto=14"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=6&t_auto=14"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>脫單策略</td>
-                        <td><a href="https://blog.singleparty.com.tw/14" target="_blank">單身可以完成的７項華麗作業</a></td>
-                        <td width="200"><a href="singleweb_fun19_add.php?t=ed&a=14">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=14','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=5&t_auto=13"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=5&t_auto=13"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>兩性相處,脫單策略,約會技巧</td>
-                        <td><a href="https://blog.singleparty.com.tw/13" target="_blank">脫單必看!7個超實用撩人金句</a></td>
-                        <td width="200"><a href="singleweb_fun19_add.php?t=ed&a=13">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=13','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=4&t_auto=12"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=4&t_auto=12"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>兩性相處,戀愛ing</td>
-                        <td><a href="https://blog.singleparty.com.tw/12" target="_blank">就算說謊也沒關係的四種情況!（男生篇）</a></td>
-                        <td width="200"><a href="singleweb_fun19_add.php?t=ed&a=12">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=12','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=3&t_auto=11"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=3&t_auto=11"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>兩性相處,脫單策略,約會技巧</td>
-                        <td><a href="https://blog.singleparty.com.tw/11" target="_blank">給孤單、寂寞的你：找個成熟的人戀愛吧！</a></td>
-                        <td width="200"><a href="singleweb_fun19_add.php?t=ed&a=11">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=11','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=2&t_auto=10"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=2&t_auto=10"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>兩性相處,脫單策略</td>
-                        <td><a href="https://blog.singleparty.com.tw/10" target="_blank">單身不寂寞，5個讓你變得更迷人自信的方法</a></td>
-                        <td width="200"><a href="singleweb_fun19_add.php?t=ed&a=10">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=10','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
-                    <tr>
-                        <td width=80><a href="?st=up_line&ad=1&t_auto=9"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="#nu" onclick="alert('無法向下');"><span class="fa fa-arrow-down"></span></a></td>
-                        <td>兩性相處,戀愛ing</td>
-                        <td><a href="https://blog.singleparty.com.tw/9" target="_blank">就算說謊也沒關係的四種情況!（女生篇）</a></td>
-                        <td width="200"><a href="singleweb_fun19_add.php?t=ed&a=9">修改</a>　<a href="javascript:;" onClick="Mars_popup2('?st=del&a=9','','width=300,height=200,top=30,left=30')">刪除</a></td>
-                    </tr>
+                    <?php 
+                        $SQL = "SELECT * FROM si_blog order by t_desc desc";
+                        $rs = $SPConn->prepare($SQL);
+                        $rs->execute();
+                        $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                        if($result){
+                            $ii = 0;
+                            foreach($result as $re){
+                                if($ii == 0){
+                                    $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                }else{
+                                    $uahref = "?st=up_line&ad=".$re["t_desc"]."&t_auto=".$re["auton"];
+                                }                                   
+                                if($ii == count($result)-1){
+                                    $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                }else{
+                                    $dahref = "?st=down_line&ad=".$re["t_desc"]."&t_auto=".$re["auton"];
+                                } ?>
+                                <tr>
+                                    <td width=80><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>			    
+                                    <td><?php echo $re["tag"]; ?></td>
+                                    <td><a href="https://blog.singleparty.com.tw/<?php echo $re["auton"]; ?>" target="_blank"><?php echo $re["title"]; ?></a></td>
+                                    <td width=200>
+                                        <a href="singleweb_fun19_add.php?st=ed&a=<?php echo $re["auton"]; ?>">修改</a>　				
+                                        <a href="javascript:;" onClick="Mars_popup2('?st=del&a=<?php echo $re["auton"]; ?>','','width=300,height=200,top=30,left=30')">刪除</a></td>
+                                    </td>
+                                </tr>
+                            <?php $ii = $ii+1; }
+                        }else{
+                            echo "<tr><td colspan=4>暫無文章</td></tr>";
+                        }
+                    ?>
                 </table>
             </div>
         </div>
