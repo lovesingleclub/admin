@@ -217,7 +217,7 @@
 			$shows = 0;
 		}
 
-		if($_REQUEST["shows"] == "2"){
+		if($_REQUEST["shows2"] == "1"){
 			$shows2 = 1;
 		}else{
 			$shows2 = 0;
@@ -241,9 +241,9 @@
 		$result = $rs->fetch(PDO::FETCH_ASSOC);
 		if($result){
 			if($_SESSION["MM_UserAuthorization"] == "admin"){
-				$SQL = "UPDATE witness SET n1='".SqlFilter($_REQUEST["n1"],"tab")."', n2='".SqlFilter($_REQUEST["n2"],"tab")."', n3='".SqlFilter($_REQUEST["n3"],"tab")."', n4='".SqlFilter($_REQUEST["n4"],"tab")."', ac_title='".SqlFilter($_REQUEST["ac_title"],"tab")."', ac_note1='".SqlFilter($_REQUEST["ac_note1"],"tab")."', show='".$shows."', show2='".$show2."' where ac_auto = ".SqlFilter($_REQUEST["pid"],"int")."";
+				$SQL = "UPDATE witness SET n1='".SqlFilter($_REQUEST["n1"],"tab")."', n2='".SqlFilter($_REQUEST["n2"],"tab")."', n3='".SqlFilter($_REQUEST["n3"],"tab")."', n4='".SqlFilter($_REQUEST["n4"],"tab")."', ac_title='".SqlFilter($_REQUEST["ac_title"],"tab")."', ac_note1='".SqlFilter($_REQUEST["ac_note1"],"tab")."', show='".$shows."', show2='".$shows2."', review='".$review."', sign='".$sign."' where ac_auto = ".SqlFilter($_REQUEST["pid"],"int")."";
 			}else{
-				$SQL = "UPDATE witness SET n1='".SqlFilter($_REQUEST["n1"],"tab")."', n2='".SqlFilter($_REQUEST["n2"],"tab")."', n3='".SqlFilter($_REQUEST["n3"],"tab")."', n4='".SqlFilter($_REQUEST["n4"],"tab")."', ac_title='".SqlFilter($_REQUEST["ac_title"],"tab")."', ac_note1='".SqlFilter($_REQUEST["ac_note1"],"tab")."', show='".$shows."', show2='".$show2."', review='".$review."', sign='".$sign."' where ac_auto = ".SqlFilter($_REQUEST["pid"],"int")."";
+				$SQL = "UPDATE witness SET n1='".SqlFilter($_REQUEST["n1"],"tab")."', n2='".SqlFilter($_REQUEST["n2"],"tab")."', n3='".SqlFilter($_REQUEST["n3"],"tab")."', n4='".SqlFilter($_REQUEST["n4"],"tab")."', ac_title='".SqlFilter($_REQUEST["ac_title"],"tab")."', ac_note1='".SqlFilter($_REQUEST["ac_note1"],"tab")."', show='".$shows."', show2='".$shows2."' where ac_auto = ".SqlFilter($_REQUEST["pid"],"int")."";
 			}
 			$rs = $SPConn->prepare($SQL);
 			$rs->execute();			
@@ -346,7 +346,7 @@
 								<td width="150" align="left" valign="middle"></td>
 								<td colspan=4>
 									<label class="checkbox"><input type="checkbox" name="shows" id="shows" value="1"<?php if($shows == 1) echo " checked"; ?>><i></i> 春網前台顯示</label>
-									<label class="checkbox"><input type="checkbox" name="shows2" id="shows2" value="1"<?php if($show2 == 1) echo " checked"; ?>><i></i> 業務展示系統顯示</label>
+									<label class="checkbox"><input type="checkbox" name="shows2" id="shows2" value="1"<?php if($shows2 == 1) echo " checked"; ?>><i></i> 業務展示系統顯示</label>
 									<?php 
 										if($_REQUEST["id"] == "" || $_SESSION["MM_UserAuthorization"] == "admin"){ ?>
 											<label class="checkbox"><input type="checkbox" name="sign" id="sign" value="1"<?php if($sign == 1) echo " checked"; ?>><i></i> 簽約</label>
