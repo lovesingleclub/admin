@@ -15,9 +15,11 @@
 if ($_REQUEST["st"] == "make") {
     $utmcode = $_REQUEST["utmcode"];
 
-    $rm = "<!DOCTYPE html>" . PHP_EOL;
-    $rm = $rm . "<html lang='zh-TW'>" . PHP_EOL;
-    $rm = $rm . "<meta http-equiv='content-type' content='text/html'; charset=UTF-8/>" . PHP_EOL;
+    $rm = "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>" . PHP_EOL;
+    $rm = $rm . "<html xmlns='http://www.w3.org/1999/xhtml'>" . PHP_EOL;
+    $rm = $rm . "<head>" . PHP_EOL;
+    $rm = $rm . "<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />" . PHP_EOL;
+    $rm = $rm . "</head>" . PHP_EOL;
     $rm = $rm . "<body>" . PHP_EOL;
     $rm = $rm . "<center>" . PHP_EOL;
     $rm = $rm . "<table width=800 cellspacing=0 cellpadding=0 style='width:800;border:0;margin:0;padding:0'>" . PHP_EOL;
@@ -159,7 +161,7 @@ if ($_REQUEST["st"] == "make") {
     $rm = $rm . "</html>";
 
     //檔案路徑
-    $fname = "temp_excel/autoedm.html";
+    $fname = "Upload/temp_excel/autoedm.html";
     
     //存入暫存路徑
     file_put_contents($fname, $rm);

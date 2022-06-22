@@ -46,7 +46,7 @@ function deldir($path){
     }
 }
 
-$getpath = "edm/action_edm/"; //檔案夾路徑
+$getpath = "Upload/edm/action_edm/"; //檔案夾路徑
 //上傳及刪除檔案(待測)
 if ($_REQUEST["st"] == "add") {
     //刪除檔案夾內所有資料(待測)
@@ -55,7 +55,7 @@ if ($_REQUEST["st"] == "add") {
     //上傳檔案(待測)
     if ($_FILES['photofile']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES["photofile"]["name"], PATHINFO_EXTENSION); //附檔名      
-        $fileName = date("Y") . date("m") . date("d") . "_" . date("H") . date("i") . date("s") . "_action_edm" . $ext; //檔名  
+        $fileName = date("Y") . date("m") . date("d") . "_" . date("H") . date("i") . date("s") . "_action_edm". "." . $ext; //檔名  
         move_uploaded_file($_FILES["photofile"]["tmp_name"], ($getpath . $fileName)); //儲存檔案
     } else {
         call_alert("上傳出錯", 0, 0);
@@ -94,7 +94,7 @@ if ($_REQUEST["st"] == "add") {
                         foreach ($p as $val) {
                             //排除目錄中的.和..
                             if ($val != "." && $val != "..") {
-                                echo "<tr><td><a href='edm/action_edm/".$val."' target='_blank'>".$val."</a></td></tr>";
+                                echo "<tr><td><a href='Upload/edm/action_edm/".$val."' target='_blank'>".$val."</a></td></tr>";
                             }
                         }                        
                     } else {

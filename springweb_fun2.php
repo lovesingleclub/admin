@@ -130,7 +130,7 @@
                                                 if($re["t_url"] != ""){ ?>
                                                     <a href="http://www.youtube.com/watch?v=<?php echo $re["t_url"]; ?>" target="_blank">點我查看(外部連結)</a>
                                                 <?php }elseif($re["t_pic"] != ""){ ?>
-                                                    <a href="/upload_image/<?php echo $re["t_pic"]; ?>" class='fancybox'>點我查看</a>
+                                                    <a href="upload_image/<?php echo $re["t_pic"]; ?>" class='fancybox'>點我查看</a>
                                                 <?php }
                                             ?>
                                         </td>

@@ -9,6 +9,18 @@
 
     require_once("_inc.php");
     require_once("./include/_function.php");
+    //ajax上傳圖檔
+    if($_REQUEST["st"] == "upload"){
+        $t_pic = $_REQUEST["t_pic"];
+        if ($_FILES['fileupload']['error'] === UPLOAD_ERR_OK){
+            $urlpath = "upload_image/"; //儲存路徑
+            $ext = pathinfo($_FILES["fileupload"]["name"], PATHINFO_EXTENSION); //附檔名      
+            $fileName = date("Y").date("n").date("j").date("H").date("i").date("s")."_springweb_fun2_".rand(1,99).".".$ext; //檔名           
+			move_uploaded_file($_FILES["fileupload"]["tmp_name"],($urlpath.$fileName)); //儲存檔案
+        }
+        echo $fileName;
+        exit();
+    }
     require_once("./include/_top.php");
     require_once("./include/_sidebar_spring.php");
 
