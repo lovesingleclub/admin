@@ -10,6 +10,14 @@
 
 require_once("_inc.php");
 require_once("./include/_function.php");
+// ajax操作
+if($_REQUEST["st"] == "remove" && $_REQUEST["t"] != ""){
+    $SQL = "update member_data set singleparty_hot=0, singleparty_hot_check=0 where mem_num='".SqlFilter($_REQUEST["t"],"tab")."'";
+    $rs = $SPConn->prepare($SQL);
+	$rs->execute();
+    echo "fix";
+    exit();
+}
 require_once("./include/_top.php");
 require_once("./include/_sidebar_single.php");
 
@@ -22,20 +30,11 @@ if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"
     call_alert("您沒有查看此頁的權限。", "login.php", 0);
 }
 
-
-if($_REQUEST["st"] == "remove" && $_REQUEST["t"] != ""){
-    $SQL = "update member_data set singleparty_hot=0, singleparty_hot_check=0 where mem_num='".SqlFilter($_REQUEST["t"],"tab")."'";
-    $rs = $SPConn->prepare($SQL);
-	$rs->execute();
-    echo "fix";
-    exit();
-}
-
 if($_REQUEST["st"] == "add" && $_REQUEST["num"] != ""){
     $SQL = "update member_data set singleparty_hot2=1 where mem_num='".SqlFilter($_REQUEST["num"],"int")."'";
     $rs = $SPConn->prepare($SQL);
 	$rs->execute();
-    call_alert("", "singleweb_fun23.php", 0);
+    reURL("singleweb_fun23.php");
 }
 ?>
 <!-- MIDDLE -->
@@ -187,7 +186,7 @@ if($_REQUEST["st"] == "add" && $_REQUEST["num"] != ""){
                                             </td>
                                             <td>
                                                 <?php 
-                                                    echo "<a href='#r' onclick='remove($(this), '".$re["mem_num"]."')' class='btn btn-danger'>移除</a>";
+                                                    echo "<a href='#r' onclick=\"remove($(this), '".$re["mem_num"]."')\" class='btn btn-danger'>移除</a>";
                                                 ?>
                                             </td>
                                         </tr>

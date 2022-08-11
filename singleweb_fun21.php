@@ -61,7 +61,7 @@ if ($_REQUEST["st"] == "read") {
         $na = chk_mem_name($result["mem_nick"], $result["mem_name"], $result["mem_sex"], "");
         $na = trim($na);
         $na = str_replace(" ", "", $na);
-        $mdata = "暱稱：" . $na . "<br>星座：" & $result["mem_star"] . "<br>血型：" & $result["mem_blood"] . " 型";
+        $mdata = "暱稱：" . $na . "<br>星座：" . $result["mem_star"] . "<br>血型：" . $result["mem_blood"] . " 型";
         echo $result["mem_photo"] . "|" . $result["mem_area"] . "|" . $mdata;
     } else {
         echo "err";

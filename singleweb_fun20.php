@@ -10,18 +10,7 @@
 
 require_once("_inc.php");
 require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar_single.php");
-
-//程式開始 *****
-if ($_SESSION["MM_Username"] == "") {
-    call_alert("請重新登入。", "login.php", 0);
-}
-
-if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
-    call_alert("您沒有查看此頁的權限。", "login.php", 0);
-}
-
+// ajax操作
 if($_REQUEST["st"] == "agree" && $_REQUEST["t"] != ""){
     $SQL = "update member_data set singleparty_edm=1 where mem_num='".SqlFilter($_REQUEST["t"],"tab")."'";
     $rs = $SPConn->prepare($SQL);
@@ -45,6 +34,18 @@ if($_REQUEST["st"] == "remove" && $_REQUEST["t"] != ""){
     echo "fix";
     exit();
 }
+require_once("./include/_top.php");
+require_once("./include/_sidebar_single.php");
+
+//程式開始 *****
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
+}
+
 ?>
 <!-- MIDDLE -->
 <section id="middle">
@@ -201,7 +202,7 @@ if($_REQUEST["st"] == "remove" && $_REQUEST["t"] != ""){
                                             </td>
                                             <td>
                                                 <?php                                                     
-                                                    echo "<a href='#r' onclick='remove($(this), '".$re["mem_num"]."')' class='btn btn-danger'>移除</a>";
+                                                    echo "<a href='#r' onclick=\"remove($(this), '".$re["mem_num"]."')\" class='btn btn-danger'>移除</a>";
                                                 ?>
                                             </td>
                                         </tr>

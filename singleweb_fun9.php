@@ -122,7 +122,7 @@ if($_REQUEST["st"] == "del"){
                                     } ?>
                                     <tr>
                                         <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>
-                                        <td><a href="upload_image/<?php echo $re["d2"] ?>" class="fancybox"><img src="singleparty_image/event/<?php echo $re["d2"] ?>" border=0 height=40></a></td>
+                                        <td><a href="singleparty_image/event/<?php echo $re["d2"] ?>" class="fancybox"><img src="singleparty_image/event/<?php echo $re["d2"] ?>" border=0 height=40></a></td>
                                         <td><?php echo $re["d1"]; ?></td>
                                         <td><?php echo $re["alt"]; ?></td>
                                         <td><?php echo changeDate($re["t1"]); ?></td>

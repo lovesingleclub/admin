@@ -10,18 +10,7 @@
 
 require_once("_inc.php");
 require_once("./include/_function.php");
-require_once("./include/_top.php");
-require_once("./include/_sidebar_single.php");
-
-//程式開始 *****
-if ($_SESSION["MM_Username"] == "") {
-    call_alert("請重新登入。", "login.php", 0);
-}
-
-if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
-    call_alert("您沒有查看此頁的權限。", "login.php", 0);
-}
-
+// ajax操作
 if($_REQUEST["st"] == "agree" && $_REQUEST["t"] != ""){
     $SQL = "update member_data set singleparty_hot=1 where mem_num='".SqlFilter($_REQUEST["t"],"tab")."'";
     $rs = $SPConn->prepare($SQL);
@@ -44,6 +33,17 @@ if($_REQUEST["st"] == "remove" && $_REQUEST["t"] != ""){
 	$rs->execute();
     echo "fix";
     exit();
+}
+require_once("./include/_top.php");
+require_once("./include/_sidebar_single.php");
+
+//程式開始 *****
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["singleweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
 }
 
 // 上移
@@ -157,7 +157,7 @@ if($_REQUEST["st"] == "del"){
                                     $page2 = (50-(($tPageSize*$tPage)-$total_size));
                                 }
                                 
-                                $SQL = "SELECT * FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM member_data WHERE mem_level='mem' and singleparty_hot_check=1 order by singleparty_hot_check desc, singleparty_hot asc ) t1 order by singleparty_hot_check, singleparty_hot) t2 order by singleparty_hot_check desc, singleparty_hot asc";
+                                $SQL = "SELECT * FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM member_data WHERE mem_level='mem' and singleparty_hot_check=1 order by singleparty_hot_check desc, singleparty_hot asc ) t1 order by singleparty_hot_check desc, singleparty_hot asc) t2 order by singleparty_hot_check desc, singleparty_hot asc";
                                 $rs = $SPConn->prepare($SQL);
                                 $rs->execute();
                                 $result = $rs->fetchAll(PDO::FETCH_ASSOC);
@@ -240,13 +240,13 @@ if($_REQUEST["st"] == "del"){
                                             <td>
                                                 <?php 
                                                     if($re["singleparty_hot"] == "1"){
-                                                        echo "<a href='#r' onclick='cancel($(this), '".$re["mem_num"]."')' class='btn btn-info'>取消展示</a>";
+                                                        echo "<a href='#r' onclick=\"cancel($(this), '".$re["mem_num"]."')\" class='btn btn-info'>取消展示</a>";
                                                     }elseif($nopic == 1){
                                                         echo "<a href='#' class='btn btn-primary disabled'>無照片</a>";
                                                     }else{
-                                                        echo "<a href='#r' onclick='agree($(this), '".$re["mem_num"]."')' class='btn btn-success'>通過</a>";
+                                                        echo "<a href='#r' onclick=\"agree($(this), '".$re["mem_num"]."')\" class='btn btn-success'>通過</a>";
                                                     }
-                                                    echo "<a href='#r' onclick='remove($(this), '".$re["mem_num"]."')' class='btn btn-danger'>移除</a>";
+                                                    echo "<a href='#r' onclick=\"remove($(this), '".$re["mem_num"]."')\" class='btn btn-danger'>移除</a>";
                                                 ?>
                                             </td>
                                         </tr>

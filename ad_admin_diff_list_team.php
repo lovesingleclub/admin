@@ -1,334 +1,205 @@
 <?php
+/****************************************/
+//檔案名稱：ad_admin_diff_team.php
+//後台對應位置：名單／發送功能 / 小組業績表
+//改版日期：2022.07.12
+//改版設計人員：Jack
+//改版程式人員：Queena
+/****************************************/
+
 require_once("_inc.php");
 require_once("./include/_function.php");
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php")
-?>
+require_once("./include/_sidebar.php");
 
-<!-- MIDDLE -->
+//登入判斷
+if ( $_SESSION["MM_Username"] == "" ){ call_alert_new(3,"請重新登入。","login.php"); }
+
+//權限判斷
+check_page_power("ad_admin_diff_list_team");
+
+//麵包屑
+$unitprocess = $m_home.$icon."名單／發送功能".$icon."小組業績表";
+
+//接收值
+$y1 = SqlFilter($_REQUEST["y1"],"tab");
+$y2 = SqlFilter($_REQUEST["y2"],"tab");
+$team = SqlFilter($_REQUEST["team"],"tab");
+$branch = SqlFilter($_REQUEST["branch"],"tab");
+
+//日期(1)
+if ( $y1 != "" ){
+    $y1 = $y1." 00:00";
+}else{
+    $y1 = date("Y-m")."-01";
+}
+//日期(2)
+if ( $y2 != "" ){
+    $y2 = $y2." 23:59";
+}else{
+    $y2 = date("Y-m-d");
+}
+
+//sqlss = sqlss & " and pb_times between '"&y1&"' and '"&y2&"'"
+//sqlss3 = sqlss3 & " and ps_times between '"&y1&"' and '"&y2&"'"
+
+$subSQL1 = "And ps_times Between '".$y1."' And '".$y2."' ";
+
+if ( $team != "" ){
+	$subSQL1 .= "And team_name='".$team."' ";
+}
+
+if ( $branch != "" ){
+	$subSQL1 .= "And p_branch='".$branch."' ";
+}
+$yy = $y1." 至 ".$y2;
+?>
 <section id="middle">
-    <!-- page title -->
-    <header id="page-header">
-        <ol class="breadcrumb">
-            <li><a href="index.php">管理系統</a></li>
-            <li class="active">小組業績表</li>
-        </ol>
+	<!-- 麵包屑 -->
+	<header id="page-header">
+        <div class="m-crumb"><i class="fa fa-folder-open-o"></i><?php echo $unitprocess;?></div>
     </header>
-    <!-- /page title -->
+    <!-- /麵包屑 -->
 
     <div id="content" class="padding-20">
-        <!-- content starts -->
-
         <div class="panel panel-default">
-            <div class="panel-heading">
-                <span class="title elipsis">
-                    <strong>區段日期表 - 小組 - 2021/9/1 至 2021/9/28</strong> <!-- panel title -->
-                </span>
-            </div>
-
+            <h2 class="pageTitle">名單／發送功能 》小組業績表 》區段日期表 》小組 - <span style="color:fuchsia;"><?php echo $yy;?></span></h2>
+            <p>
+                <input type="button" class="btn btn-info" onclick="Mars_popup('ad_admin_diff_list_team_print.php?y1=<?php echo $y1;?>&y2=<?php echo $y2;?>&team=<?php echo $team;?>>&branch=<?php echo $branch;?>','','scrollbars=yes,location=yes,status=yes,menubar=yes,resizable=yes,width=690,height=600,top=10,left=10');" value="列印本頁">
+			</p>
             <div class="panel-body">
-                <p>
-                    <input type="button" class="btn btn-default" onclick="Mars_popup('ad_admin_diff_list_team_print.php?y1=2021/9/1&y2=2021/9/28&team=&branch=','','scrollbars=yes,location=yes,status=yes,menubar=yes,resizable=yes,width=690,height=600,top=10,left=10');" value="列印本頁">
                 <form name="form1" method="post" action="?vst=full" class="form-inline">
-                    會館：<select name="branch" class="form-control">
-                        <option value="">所有會館</option>
-                        <option value="台北">台北</option>
-                        <option value="桃園">桃園</option>
-                        <option value="新竹">新竹</option>
-                        <option value="台中">台中</option>
-                        <option value="台南">台南</option>
-                        <option value="高雄">高雄</option>
-                        <option value="八德">八德</option>
-                        <option value="約專">約專</option>
-                        <option value="迷你約">迷你約</option>
-                        <option value="總管理處">總管理處</option>
-                    </select>
-                    &nbsp&nbsp
-                    小組：<select name="team" class="form-control">
-                        <option value="">所有小組</option>
-                        <option value="優質服務組">八德 - 優質服務組</option>
-                        <option value="超業">八德 - 超業</option>
-                        <option value="台中閻組">台中 - 台中閻組</option>
-                        <option value="台中熊雪枝">台中 - 台中熊雪枝</option>
-                        <option value="台中童組">台中 - 台中童組</option>
-                        <option value="台中吳組">台中 - 台中吳組</option>
-                        <option value="業1組">台北 - 業1組</option>
-                        <option value="業2組">台北 - 業2組</option>
-                        <option value="長紅">台北 - 長紅</option>
-                        <option value="業3">台北 - 業3</option>
-                        <option value="C">台南 - C</option>
-                        <option value="A組">台南 - A組</option>
-                        <option value="B組">台南 - B組</option>
-                        <option value="D組">台南 - D組</option>
-                        <option value="約專">約專 - 約專</option>
-                        <option value="第三組">桃園 - 第三組</option>
-                        <option value="第一組">桃園 - 第一組</option>
-                        <option value="迷你約">迷你約 - 迷你約</option>
-                        <option value="海妮組">高雄 - 海妮組</option>
-                        <option value="宛萍組">高雄 - 宛萍組</option>
-                        <option value="金鳳組">高雄 - 金鳳組</option>
-                        <option value="卉興組">新竹 - 卉興組</option>
-                        <option value="旺旺組">新竹 - 旺旺組</option>
-                        <option value="頂級組">新竹 - 頂級組</option>
-                        <option value="閃亮組">新竹 - 閃亮組</option>
-                    </select>
-                    &nbsp&nbsp
-                    日期：
-                    <input type="text" name="y1" class="datepicker" autocomplete="off" style="width:120px;" value="2021/9/1"> 至
-                    <input type="text" name="y2" class="datepicker" autocomplete="off" style="width:120px;" value="2021/9/28">　<input type="submit" name="Submit" class="btn btn-default" value="查詢">
+                    <div class="m-search-bar">
+                        <span class="span-group">
+                            會館：
+                            <select name="branch" class="form-control">
+                                <option value="">所有會館</option>
+                                <?php for ($i=0;$i<count($branch3_option);$i++){ //陣列在_function ?>
+                                    <option value="<?php echo $branch3_option[$i];?>"<?php if ($branch == $branch3_option[$i] ){?> selected<?php }?>><?php echo $branch3_option[$i];?></option>
+                                <?php }?>
+                            </select>
+                        </span>
+                        <span class="span-group">
+                            小組：
+                            <select name="team" class="form-control">
+                                <option value="">所有小組</option>
+                                <?php
+                                if ( $branch != "" ){ $teamSQL = "Where branch='".$branch."'"; }
+                                $SQL = "Select * From bteam_list".$teamSQL." Order By branch";
+                                $rs = $SPConn->prepare($SQL);
+                                $rs->execute();
+                                $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                                if ( count($result) > 0 ){
+                                    foreach($result as $re){
+                                        echo "<option value='".$re["team_name"]."'>".$re["branch"]." - ".$re["team_name"]."</option>";
+                                    }
+                                }?>
+                            </select>
+                        </span>
+                        <span class="span-group">
+                            日期：
+                            <input type="text" name="y1" class="datepicker" autocomplete="off" style="width:120px;text-align:center;" value="<?php echo $y1;?>"> 至
+                            <input type="text" name="y2" class="datepicker" autocomplete="off" style="width:120px;text-align:center;" value="<?php echo $y2;?>">　
+                        </span>
+                        <input type="submit" name="Submit" class="btn btn-default" value="查詢">
+                    </div>
                 </form>
-                </p>
-
-
 
                 <!-- 標籤分頁 -->
-                <div class="">
+                <div>
                     <!-- 標籤頭 -->
                     <ul class="nav nav-tabs nav-top-border" role="tablist">
-                        <li class="active"><a href="#taipei" aria-controls="home" role="tab" data-toggle="tab">台北</a></li>
-                        <li><a href="#taoyuan" aria-controls="profile" role="tab" data-toggle="tab">桃園</a></li>
-                        <li><a href="#hsinchu" aria-controls="messages" role="tab" data-toggle="tab">新竹</a></li>
-                        <li><a href="#taichung" aria-controls="settings" role="tab" data-toggle="tab">台中</a></li>
-                        <li><a href="#tainan" aria-controls="settings" role="tab" data-toggle="tab">台南</a></li>
-                        <li><a href="#kaohsiung" aria-controls="settings" role="tab" data-toggle="tab">高雄</a></li>
-                        <li><a href="#bade" aria-controls="settings" role="tab" data-toggle="tab">八德</a></li>
-                        <li><a href="#sp" aria-controls="settings" role="tab" data-toggle="tab">約專</a></li>
-                        <li><a href="#mini" aria-controls="settings" role="tab" data-toggle="tab">迷你約</a></li>
-                        <li><a href="#headoffice" aria-controls="settings" role="tab" data-toggle="tab">總管理處</a></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#dropdown1" tabindex="-1" data-toggle="tab">@fat</a></li>
-                                <li><a href="#dropdown2" tabindex="-1" data-toggle="tab">@mdo</a></li>
-                            </ul>
-                        </li>
+                        <li class="active"><a href="#branchx" aria-controls="home" role="tab" data-toggle="tab">所有</a></li>
+                        <?php for ($i=0;$i<count($branch3_option);$i++){ ?>
+                            <li><a href="#branch<?php echo $i;?>" aria-controls="profile" role="tab" data-toggle="tab"><?php echo $branch3_option[$i];?></a></li>
+                        <?php }?>
                     </ul>
 
                     <!-- 標籤內容 -->
                     <div class="tab-content">
-                        <!-- 標籤內容台北 -->
-                        <div class="tab-pane active" id="taipei">
+
+                        <!-- 所有會館 -->
+                        <div>
+                        <div class="tab-pane active" id="branchx">
                             <div class="row">
-
-                                <div class="col-md-3">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading text-center"><i class="icon-th"></i> 台北 - 業1組</div>
-                                        <div class="panel-body">
-                                            <div style="font-weight:bold">小組組長：高語鍹</div><br>
-                                            <table class="table table-striped table-bordered bootstrap-datatable">
-                                                <tr>
-                                                    <td width=3>1</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=180&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">高語鍹</a></td>
-                                                    <td>$58,947</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>2</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=1679&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">陳玉涵</a></td>
-                                                    <td>$1,200</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>3</td>
-                                                    <td>陳稚翔</a></td>
-                                                    <td>$0</td>
-                                                </tr>
-                                            </table>
-                                            <div>組長 1 位、組員 2 位、共 3 位成員</div>
-                                            <div style="font-weight:bold">小組目標：$1,200,000</div>
-                                            <div style="font-weight:bold">小組業績：$60,147 &nbsp(-$1,139,853)</div>
-                                            <div style="font-weight:bold;color:red">業績達成：5%</div>
+                                <?php
+                                $SQL1 = "Select * From bteam_list Order By times, branch";
+                                $rs1 = $SPConn->prepare($SQL1);
+                                $rs1->execute();
+                                $result1 = $rs1->fetchAll(PDO::FETCH_ASSOC);
+                                $x=10;
+                                $ii = 1;
+                                foreach($result1 as $re1){ ?>
+                                    <div class="col-md-3">
+                                        <div class="panel panel-default">
+                                        <div class="panel-heading text-center"><i class="icon-th"></i><span style="color:blue;text-align:center;font-weight:bold;"><?php echo $re1["branch"]." - ".$re1["team_name"];?></span></div>
+                                            <div class="panel-body">
+                                                <div style="font-weight:bold;color:teal;">小組組長：<?php echo $re1["team_leader_name"];?></div><br>
+                                                <table class="table table-striped table-bordered bootstrap-datatable">
+                                                    <?php for ($y=20;$y>$x;$y--){?>
+                                                        <tr>
+                                                            <td width=3>1</td>
+                                                            <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=180&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">高語鍹</a></td>
+                                                            <td>$58,947</td>
+                                                        </tr>
+                                                    <?php }?>
+                                                    
+                                                </table>
+                                                <div>組長 1 位、組員 2 位、共 3 位成員</div>
+                                                <div style="font-weight:bold">小組目標：$1,200,000</div>
+                                                <div style="font-weight:bold">小組業績：$60,147 &nbsp(-$1,139,853)</div>
+                                                <div style="font-weight:bold;color:red">業績達成：5%</div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading text-center"><i class="icon-th"></i> 台北 - 業1組</div>
-                                        <div class="panel-body">
-                                            <div style="font-weight:bold">小組組長：高語鍹</div><br>
-                                            <table class="table table-striped table-bordered bootstrap-datatable">
-                                                <tr>
-                                                    <td width=3>1</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=180&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">高語鍹</a></td>
-                                                    <td>$58,947</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>2</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=1679&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">陳玉涵</a></td>
-                                                    <td>$1,200</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>3</td>
-                                                    <td>陳稚翔</a></td>
-                                                    <td>$0</td>
-                                                </tr>
-                                            </table>
-                                            <div>組長 1 位、組員 2 位、共 3 位成員</div>
-                                            <div style="font-weight:bold">小組目標：$1,200,000</div>
-                                            <div style="font-weight:bold">小組業績：$60,147 &nbsp(-$1,139,853)</div>
-                                            <div style="font-weight:bold;color:red">業績達成：5%</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading text-center"><i class="icon-th"></i> 台北 - 業1組</div>
-                                        <div class="panel-body">
-                                            <div style="font-weight:bold">小組組長：高語鍹</div><br>
-                                            <table class="table table-striped table-bordered bootstrap-datatable">
-                                                <tr>
-                                                    <td width=3>1</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=180&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">高語鍹</a></td>
-                                                    <td>$58,947</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>2</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=1679&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">陳玉涵</a></td>
-                                                    <td>$1,200</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>3</td>
-                                                    <td>陳稚翔</a></td>
-                                                    <td>$0</td>
-                                                </tr>
-                                            </table>
-                                            <div>組長 1 位、組員 2 位、共 3 位成員</div>
-                                            <div style="font-weight:bold">小組目標：$1,200,000</div>
-                                            <div style="font-weight:bold">小組業績：$60,147 &nbsp(-$1,139,853)</div>
-                                            <div style="font-weight:bold;color:red">業績達成：5%</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading text-center"><i class="icon-th"></i> 台北 - 業1組</div>
-                                        <div class="panel-body">
-                                            <div style="font-weight:bold">小組組長：高語鍹</div><br>
-                                            <table class="table table-striped table-bordered bootstrap-datatable">
-                                                <tr>
-                                                    <td width=3>1</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=180&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">高語鍹</a></td>
-                                                    <td>$58,947</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>2</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=1679&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">陳玉涵</a></td>
-                                                    <td>$1,200</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>3</td>
-                                                    <td>陳稚翔</a></td>
-                                                    <td>$0</td>
-                                                </tr>
-                                            </table>
-                                            <div>組長 1 位、組員 2 位、共 3 位成員</div>
-                                            <div style="font-weight:bold">小組目標：$1,200,000</div>
-                                            <div style="font-weight:bold">小組業績：$60,147 &nbsp(-$1,139,853)</div>
-                                            <div style="font-weight:bold;color:red">業績達成：5%</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading text-center"><i class="icon-th"></i> 台北 - 業1組</div>
-                                        <div class="panel-body">
-                                            <div style="font-weight:bold">小組組長：高語鍹</div><br>
-                                            <table class="table table-striped table-bordered bootstrap-datatable">
-                                                <tr>
-                                                    <td width=3>1</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=180&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">高語鍹</a></td>
-                                                    <td>$58,947</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>2</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=1679&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">陳玉涵</a></td>
-                                                    <td>$1,200</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>3</td>
-                                                    <td>陳稚翔</a></td>
-                                                    <td>$0</td>
-                                                </tr>
-                                            </table>
-                                            <div>組長 1 位、組員 2 位、共 3 位成員</div>
-                                            <div style="font-weight:bold">小組目標：$1,200,000</div>
-                                            <div style="font-weight:bold">小組業績：$60,147 &nbsp(-$1,139,853)</div>
-                                            <div style="font-weight:bold;color:red">業績達成：5%</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading text-center"><i class="icon-th"></i> 台北 - 業1組</div>
-                                        <div class="panel-body">
-                                            <div style="font-weight:bold">小組組長：高語鍹</div><br>
-                                            <table class="table table-striped table-bordered bootstrap-datatable">
-                                                <tr>
-                                                    <td width=3>1</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=180&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">高語鍹</a></td>
-                                                    <td>$58,947</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>2</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=1679&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">陳玉涵</a></td>
-                                                    <td>$1,200</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>3</td>
-                                                    <td>陳稚翔</a></td>
-                                                    <td>$0</td>
-                                                </tr>
-                                            </table>
-                                            <div>組長 1 位、組員 2 位、共 3 位成員</div>
-                                            <div style="font-weight:bold">小組目標：$1,200,000</div>
-                                            <div style="font-weight:bold">小組業績：$60,147 &nbsp(-$1,139,853)</div>
-                                            <div style="font-weight:bold;color:red">業績達成：5%</div>
-                                        </div>
-                                    </div>
-                                </div>
-
+                                    <?php if($ii%4 == 0) echo "<div style='clear:both'></div>"; $ii++?>
+                                <?php $x++;}?>
                             </div>
                         </div>
-
-                        <!-- 標籤內容桃園 -->
-                        <div class="tab-pane" id="taoyuan">
-                            <div class="row">
-
-                                <div class="col-md-3">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading text-center"><i class="icon-th"></i> 台北 - 業1組</div>
-                                        <div class="panel-body">
-                                            <div style="font-weight:bold">小組組長：高語鍹</div><br>
-                                            <table class="table table-striped table-bordered bootstrap-datatable">
-                                                <tr>
-                                                    <td width=3>1</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=180&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">高語鍹</a></td>
-                                                    <td>$58,947</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>2</td>
-                                                    <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=1679&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">陳玉涵</a></td>
-                                                    <td>$1,200</td>
-                                                </tr>
-                                                <tr>
-                                                    <td width=3>3</td>
-                                                    <td>陳稚翔</a></td>
-                                                    <td>$0</td>
-                                                </tr>
-                                            </table>
-                                            <div>組長 1 位、組員 2 位、共 3 位成員</div>
-                                            <div style="font-weight:bold">小組目標：$1,200,000</div>
-                                            <div style="font-weight:bold">小組業績：$60,147 &nbsp(-$1,139,853)</div>
-                                            <div style="font-weight:bold;color:red">業績達成：5%</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
                         </div>
 
+
+                        <!-- 會館迴圈 -->
+                        <?php for ($i=0;$i<count($branch3_option);$i++){ ?>
+                            <div class="tab-pane" id="branch<?php echo $i;?>">
+                                <div class="row">
+                                    <?php for ($x=1;$x<11;$x++){?>
+                                        <div class="col-md-3">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading text-center"><i class="icon-th"></i> 台北 - 業1組[<?php echo $i;?>]</div>
+                                                <div class="panel-body">
+                                                    <div style="font-weight:bold">小組組長：高語鍹</div><br>
+                                                    <table class="table table-striped table-bordered bootstrap-datatable">
+                                                        <tr>
+                                                            <td width=3>1</td>
+                                                            <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=180&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">高語鍹</a></td>
+                                                            <td>$58,947</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width=3>2</td>
+                                                            <td><a href="javascript:Mars_popup('ad_admin_month_list_diff_view.php?an=1679&ny1=2021/9/1&ny2=2021/9/28','','status=yes,menubar=yes,scrollbars=yes,width=780,height=500,top=10,left=10');">陳玉涵</a></td>
+                                                            <td>$1,200</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width=3>3</td>
+                                                            <td>陳稚翔</a></td>
+                                                            <td>$0</td>
+                                                        </tr>
+                                                    </table>
+                                                    <div>組長 1 位、組員 2 位、共 3 位成員</div>
+                                                    <div style="font-weight:bold">小組目標：$1,200,000</div>
+                                                    <div style="font-weight:bold">小組業績：$60,147 &nbsp(-$1,139,853)</div>
+                                                    <div style="font-weight:bold;color:red">業績達成：5%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php }?>
+                                </div>
+                            </div>
+                        <?php }?>
+                        <!-- /會館迴圈 -->
                     </div>
-                    
+                    <!-- /標籤內容 -->
                 </div>
                 <!-- /標籤分頁 -->
 
