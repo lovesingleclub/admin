@@ -49,7 +49,7 @@
                     <thead>
                         <tr>
                             <td width="110">服務器地址</td>
-                            <td width="390">名稱 <?php echo $_SERVER['SERVER_NAME'] ; ?> (IP:<?php echo $_SERVER["LOCAL_ADDR"]; ?>) 端口:<?php echo $_SERVER["SERVER_PORT"]; ?></td>
+                            <td width="390">名稱 www.singleparty.com.tw (IP:<?php echo $_SERVER["LOCAL_ADDR"]; ?>) 端口:<?php echo $_SERVER["SERVER_PORT"]; ?></td>
                         </tr>
 
                         <tr>
