@@ -1,8 +1,71 @@
 <?php
+/*****************************************/
+//檔案名稱：dmnweb_fun11.php
+//後台對應位置：DateMeNow網站系統/精選會員
+//改版日期：2022.8.25
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
 require_once("_inc.php");
 require_once("./include/_function.php");
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_dmn.php");
+
+// 程式開始
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if ($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["dmnweb"] != "1") {
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
+}
+
+//刪除
+if($_REQUEST["st"] == "del"){
+    $SQL = "delete from IndexHotUser where BoardSN='".SqlFilter($_REQUEST["an"],"int")."'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    reURL("dmnweb_fun10.php");
+}
+
+//新增
+if($_REQUEST["st"] == "add" && $_REQUEST["userid"] != ""){
+    $SQL = "select * from UserData where UserId='".SqlFilter($_REQUEST["userid"],"tab")."'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        $UserId = $result["UserID"];
+        $NickName = $result["NickName"];
+        $Gender = $result["Gender"];
+        $Generation = $result["Generation"];
+        $Education = $result["Education"];
+        $City = $result["City"];		
+        $HeadPhotoURL = $result["HeadPhotoURL"];
+        $Constellation = $result["Constellation"];
+        $Occupation = $result["Occupation"];
+        $Tall = $result["Tall"];
+        $InsertDate = str_replace("/", "",date("Y/m/d"));
+    }else{
+        call_alert("會員資料庫中沒有此編號。", "dmnweb_fun10.php", 0);
+    }
+    
+    if($UserId != ""){
+        $SQL = "select * from IndexHotUser where UserId='".$UserId."'";
+        $rs = $DMNConn->prepare($SQL);
+        $rs->execute();
+        $result = $rs->fetch(PDO::FETCH_ASSOC);
+        if($result){
+            call_alert("精選會員中已有此編號。", "dmnweb_fun10.php", 0);
+        }else{
+            $SQL = "INSERT INTO IndexHotUser (UserID,VisitNum,VerifyLevel,NickName,Gender,Occupation,Generation,Education,City,HeadPhotoURL,Constellation,Tall,InsertDate) VALUES ('".$UserId."','1','1','".$NickName."','".$Gender."','".$Occupation."','".$Generation."','".$Education."','".$City."','".$HeadPhotoURL."','".$Constellation."','".$Tall."','".$InsertDate."')";
+            $rs = $DMNConn->prepare($SQL);
+            $rs->execute();
+        }      
+    }
+    call_alert("新增完成。", "dmnweb_fun10.php", 0);
+   
+}
 ?>
 
 <!-- MIDDLE -->
@@ -50,49 +113,90 @@ require_once("./include/_sidebar.php");
                             <th>身高</th>
                             <th>操作</th>
                         </tr>
+                        <?php
+                            // 關鍵字篩選
+                            if($_REQUEST["keyword"] != ""){
+                                $sqls = $sqls . " and UserId like '%".$_REQUEST["keyword"]."%'";
+                            }else{
+                                $sqls = "";
+                            }
 
-                        <tr>
-                            <td>
-                                <a href="dphoto/20535287/head/rsl/rsl_55ed72ec4191f.jpg" class="fancybox"><img src="dphoto/20535287/head/rsl/rsl_55ed72ec4191f.jpg" border=0 height=40></a>
-                            </td>
-                            <td>2f30ae0e</td>
-                            <td>Sam</td>
-                            <td>男</td>
-                            <td>1982</td>
-                            <td>新北市</td>
-                            <td>其他</td>
-                            <td>大學</td>
-                            <td>天秤</td>
-                            <td>170</td>
-                            <td>
-                                <a title="刪除" href="dmnweb_fun10.php?st=del&an=441">刪除</a>
-                            </td>
-                        </tr>
+                            //取得總筆數
+                            $SQL = "Select count(BoardSN) As total_size FROM IndexHotUser where 1=1 ".$sqls."";
+                            $rs = $DMNConn->prepare($SQL);
+                            $rs->execute();
+                            $result=$rs->fetchAll(PDO::FETCH_ASSOC);
+                            foreach($result as $re);
+                            if ( count($result) == 0 || $re["total_size"] == 0 ) {
+                                $total_size = 0;
+                            }else{
+                                $total_size = $re["total_size"];
+                            }                                
+                            
+                            //取得分頁資料
+                            $tPageSize = 50; //每頁幾筆
+                            $tPage = 1; //目前頁數
+                            $tPage_list = 0;
+                            if ( $_REQUEST["tPage"] > 1 ){ 
+                                $tPage = $_REQUEST["tPage"];
+                                $tPage_list = ($tPage-1);
+                            }
+                            $tPageTotal = ceil(($total_size/$tPageSize)); //總頁數
+
+                            //分頁語法
+                            $SQL_list  = "Select Top ".$tPageSize." * ";
+                            $SQL_list .= "From (Select row_number() ";
+                            $SQL_list .= "over(order by BoardSN desc) As rownumber, BoardSN, UserID, VisitNum, NickName, Gender, City, HeadPhotoURL, VerifyLevel, Constellation, Tall, InsertDate, Generation, Education, Occupation ";
+                            $SQL_list .= "From IndexHotUser Where 1=1 ".$sqls." ) temp_row ";
+                            $SQL_list .= "Where rownumber > ".($tPageSize*$tPage_list);
+
+                            $rs = $DMNConn->prepare($SQL_list);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            
+                            if($result){
+                                foreach($result as $re){ ?> 
+                                    <tr>
+                                        <td>
+                                            <?php 
+                                                if($re["HeadPhotoURL"] != ""){
+                                                    echo "<a href='dphoto/".$re["HeadPhotoURL"]."' class='fancybox'><img src='dphoto/".$re["HeadPhotoURL"]."' border=0 height=40></a>";
+                                                }else{
+                                                    echo "無";
+                                                }
+                                            ?>
+                                        </td>
+                                        <td><?php echo $re["UserID"]; ?></td>
+                                        <td><?php echo $re["NickName"]; ?></td>
+                                        <td>
+                                            <?php 
+                                                if($re["Gender"] == "M"){
+                                                    echo "男";
+                                                }else{
+                                                    echo "女";
+                                                }
+                                            ?>
+                                        </td>					
+                                        <td><?php echo $re["Generation"]; ?></td>					
+                                        <td><?php echo $re["City"]; ?></td>
+                                        <td><?php echo $re["Occupation"]; ?></td>
+                                        <td><?php echo $re["Education"]; ?></td>
+                                        <td><?php echo $re["Constellation"]; ?></td>
+                                        <td><?php echo $re["Tall"]; ?></td>
+                                        <td>					
+                                            <a title="刪除" href="dmnweb_fun10.php?st=del&an=<?php echo $re["BoardSN"]; ?>">刪除</a>						
+                                        </td>
+                                    </tr>
+                                <?php }
+                            }else{
+                                echo "<tr><td colspan=11>目前無資料</td></tr>";
+                            }
+                        ?>
                     </tbody>
                 </table>
             </div>
-            <div class="text-center">共 282 筆、第 1 頁／共 6 頁&nbsp;&nbsp;
-                <ul class='pagination pagination-md'>
-                    <li><a href=/dmnweb_fun10.php?topage=1>第一頁</a></li>
-                    <li class='active'><a href="#">1</a></li>
-                    <li><a href=/dmnweb_fun10.php?topage=2 class='text'>2</a></li>
-                    <li><a href=/dmnweb_fun10.php?topage=3 class='text'>3</a></li>
-                    <li><a href=/dmnweb_fun10.php?topage=4 class='text'>4</a></li>
-                    <li><a href=/dmnweb_fun10.php?topage=5 class='text'>5</a></li>
-                    <li><a href=/dmnweb_fun10.php?topage=6 class='text'>6</a></li>
-                    <li><a href=/dmnweb_fun10.php?topage=2 class='text' title='Next'>下一頁</a></li>
-                    <li><a href=/dmnweb_fun10.php?topage=6 class='text'>最後一頁</a></li>
-                    <li><select style="width:60px;height:34px;margin-left:5px;" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
-                            <option value="/dmnweb_fun10.php?topage=1" selected>1</option>
-                            <option value="/dmnweb_fun10.php?topage=2">2</option>
-                            <option value="/dmnweb_fun10.php?topage=3">3</option>
-                            <option value="/dmnweb_fun10.php?topage=4">4</option>
-                            <option value="/dmnweb_fun10.php?topage=5">5</option>
-                            <option value="/dmnweb_fun10.php?topage=6">6</option>
-                        </select></li>
-                </ul>
-            </div>
-
+            <!-- 頁碼 -->
+            <?php require_once("./include/_page.php"); ?>
         </div>
         <!--/span-->
     </div>

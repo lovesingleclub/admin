@@ -1,8 +1,81 @@
 <?php
+
+/*****************************************/
+//檔案名稱：dmnweb_fun11.php
+//後台對應位置：DateMeNow網站系統/幸福故事
+//改版日期：2022.8.24
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
 require_once("_inc.php");
 require_once("./include/_function.php");
+//ajax
+if ($_REQUEST["st"] == "sa") {
+    $SQL = "update happiness set set_top=" . SqlFilter($_REQUEST["v"], "int") . " where auton=" . SqlFilter($_REQUEST["t"], "int") . "";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+}
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_dmn.php");
+
+// 程式開始
+if ($_SESSION["MM_Username"] == "") {
+    call_alert("請重新登入。", "login.php", 0);
+}
+
+if ($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["dmnweb"] != "1") {
+    call_alert("您沒有查看此頁的權限。", "login.php", 0);
+}
+
+// 文章上移
+if ($_REQUEST["st"] == "up_line") {
+    $nowline = round(SqlFilter($_REQUEST["ad"], "int"));
+    $upline = $nowline + 1;
+    $SQL = "update happiness set des=" . $nowline . " where des='" . $upline . "'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $SQL = "update happiness set des=" . $upline . " where auton=" . SqlFilter($_REQUEST["an"], "int") . "";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+}
+
+// 文章下移
+if ($_REQUEST["st"] == "down_line") {
+    $nowline = round(SqlFilter($_REQUEST["ad"], "int"));
+    $upline = $nowline - 1;
+    $SQL = "update happiness set des=" . $nowline . " where des=" . $upline . "";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $SQL = "update happiness set des=" . $upline . " where auton=" . SqlFilter($_REQUEST["an"], "int") . "";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+}
+
+// 刪除文章+圖片(待測)
+if ($_REQUEST["st"] == "del") {
+    $SQL = "select * from happiness where auton=" . SqlFilter($_REQUEST["an"], "int") . "";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if ($result) {
+        if ($result["pic1"] != "") {
+            DelFile("datemenow_image/upload/" . $result["pic1"]);
+        }
+        if ($result["pic2"] != "") {
+            DelFile("datemenow_image/upload/" . $result["pic2"]);
+        }
+        if ($result["pic3"] != "") {
+            DelFile("datemenow_image/upload/" . $result["pic3"]);
+        }
+    }
+
+    $SQL = "delete from happiness where auton=" . SqlFilter($_REQUEST["an"], "int") . "";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+
+    reURL("win_close.php?m=刪除中.....");
+}
+
 ?>
 
 <!-- MIDDLE -->
@@ -43,34 +116,50 @@ require_once("./include/_sidebar.php");
                             <th width=120>TAG</th>
                             <th width=60>操作</th>
                         </tr>
-
-                        <tr>
-                            <td><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=44&an=55"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2021/9/30 下午 02:54:15</td>
-                            <td>給單身的你：不管如何一定堅信自己是最棒的 </td>
-                            <td>Helen：我們結婚了❤❤❤往事歷歷在目，謝謝自己的勇氣與老天的眷顧，讓我能遇到可靠的對象攜手邁向新</td>
-                            <td>Helen / Kevin</td>
-                            <td><input data-no-uniform="true" type="checkbox" id="55" class="show_check" checked></td>
-                            <td>結婚啦</td>
-                            <td>
-                                <a href="dmnweb_fun11_add.php?act=up&an=55">編輯</a>
-                                <a href="javascript:Mars_popup2('dmnweb_fun11.php?st=del&an=55','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=up_line&ad=43&an=54"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=down_line&ad=43&an=54"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>2021/4/21 下午 05:50:09</td>
-                            <td>透過相親、聯誼的方式認識對象，一直不存在我過往的人生經驗裡。如今卻透過這樣不曾考慮的管道認識現在的男朋友...</td>
-                            <td>透過相親、聯誼的方式認識對象，一直不存在我過往的人生經驗裡。如今卻透過這樣不曾考慮的管道認識現在的男</td>
-                            <td>V's / B'r</td>
-                            <td><input data-no-uniform="true" type="checkbox" id="54" class="show_check" checked></td>
-                            <td>熱戀中</td>
-                            <td>
-                                <a href="dmnweb_fun11_add.php?act=up&an=54">編輯</a>
-                                <a href="javascript:Mars_popup2('dmnweb_fun11.php?st=del&an=54','','width=300,height=200,top=100,left=100')">刪除</a>
-                            </td>
-                        </tr>
+                        <?php
+                            $SQL = "SELECT * FROM happiness order by des desc";
+                            $rs = $DMNConn->prepare($SQL);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if ($result) {
+                                $ii = 0;
+                                foreach($result as $re){
+                                    if($ii == 0){
+                                        $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                    }else{
+                                        $uahref = "?st=up_line&ad=".$re["des"]."&an=".$re["auton"];
+                                    }                                   
+                                    if($ii == count($result)-1){
+                                        $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                    }else{
+                                        $dahref = "?st=down_line&ad=".$re["des"]."&an=".$re["auton"];
+                                    } ?>
+                                    <tr>
+                                    <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>			    
+                                        <td><?php echo changeDate($re["times"]); ?></td>				
+                                        <td><?php echo $re["title"]; ?></td>
+                                        <td><?php echo mb_substr(RemoveHTML($re["content"]),0,50,"utf-8"); ?></td>
+                                        <td><?php echo $re["n1"]; ?></td>
+                                        <td>
+                                            <?php 
+                                                if($re["set_top"] == 1){
+                                                    echo "<input data-no-uniform='true' type='checkbox' id='".$re["auton"]."' class='show_check' checked>";
+                                                }else{
+                                                    echo "<input data-no-uniform='true' type='checkbox' id='".$re["auton"]."' class='show_check'>";
+                                                }
+                                            ?>
+                                        </td>
+                                        <td><?php echo $re["tag"]; ?></td>
+                                        <td>
+                                            <a href="dmnweb_fun11_add.php?act=up&an=<?php echo $re["auton"]; ?>">編輯</a>					
+                                            <a href="javascript:Mars_popup2('dmnweb_fun11.php?st=del&an=<?php echo $re["auton"]; ?>','','width=300,height=200,top=100,left=100')">刪除</a>						
+                                        </td>
+                                    </tr>
+                                <?php $ii = $ii+1; }
+                            }else{
+                                echo "<tr><td colspan=8>目前無資料</td></tr>";
+                            }
+                        ?>
                     </tbody>
                 </table>
             </div>

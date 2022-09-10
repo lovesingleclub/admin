@@ -21,7 +21,6 @@ if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["dmnweb"] != "1"){
     call_alert("您沒有查看此頁的權限。","login.php",0);
 }
 
-
 // 圖片上移
 if($_REQUEST["st"] == "mup"){
     $nowline = round(SqlFilter($_REQUEST["i1"],"int"));

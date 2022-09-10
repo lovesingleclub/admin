@@ -146,19 +146,36 @@ if($_REQUEST["st"] == "del"){
                                     $total_size = $re["total_size"];
                                 }                                
 
+                                // //取得分頁資料
+                                // $tPageSize = 50; //每頁幾筆
+                                // $tPage = 1; //目前頁數
+                                // if ( $_REQUEST["tPage"] > 1 ){ $tPage = $_REQUEST["tPage"];}
+                                // $tPageTotal = ceil(($total_size/$tPageSize)); //總頁數
+                                // if ( $tPageSize*$tPage < $total_size ){
+                                //     $page2 = 50;
+                                // }else{
+                                //     $page2 = (50-(($tPageSize*$tPage)-$total_size));
+                                // }
+
                                 //取得分頁資料
                                 $tPageSize = 50; //每頁幾筆
                                 $tPage = 1; //目前頁數
-                                if ( $_REQUEST["tPage"] > 1 ){ $tPage = $_REQUEST["tPage"];}
-                                $tPageTotal = ceil(($total_size/$tPageSize)); //總頁數
-                                if ( $tPageSize*$tPage < $total_size ){
-                                    $page2 = 50;
-                                }else{
-                                    $page2 = (50-(($tPageSize*$tPage)-$total_size));
+                                $tPage_list = 0;
+                                if ( $_REQUEST["tPage"] > 1 ){ 
+                                    $tPage = $_REQUEST["tPage"];
+                                    $tPage_list = ($tPage-1);
                                 }
+                                $tPageTotal = ceil(($total_size/$tPageSize)); //總頁數
+
+                                //分頁語法
+                                $SQL_list  = "Select Top ".$tPageSize." * ";
+                                $SQL_list .= "From (Select row_number() ";
+                                $SQL_list .= "over(order by singleparty_hot_check desc, singleparty_hot asc) As rownumber, * ";
+                                $SQL_list .= "From member_data Where mem_level='mem' and singleparty_hot_check=1 ) temp_row ";
+                                $SQL_list .= "Where rownumber > ".($tPageSize*$tPage_list);
                                 
-                                $SQL = "SELECT * FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM member_data WHERE mem_level='mem' and singleparty_hot_check=1 order by singleparty_hot_check desc, singleparty_hot asc ) t1 order by singleparty_hot_check desc, singleparty_hot asc) t2 order by singleparty_hot_check desc, singleparty_hot asc";
-                                $rs = $SPConn->prepare($SQL);
+                                // $SQL = "SELECT * FROM (SELECT TOP " .$page2. " * FROM (SELECT TOP " .($tPageSize*$tPage). " * FROM member_data WHERE mem_level='mem' and singleparty_hot_check=1 order by singleparty_hot_check desc, singleparty_hot asc ) t1 order by singleparty_hot_check, singleparty_hot) t2 order by singleparty_hot_check desc, singleparty_hot asc";
+                                $rs = $SPConn->prepare($SQL_list);
                                 $rs->execute();
                                 $result = $rs->fetchAll(PDO::FETCH_ASSOC);
                                 if($result){

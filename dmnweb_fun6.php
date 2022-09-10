@@ -1,8 +1,70 @@
 <?php
+/*****************************************/
+//檔案名稱：dmnweb_fun6.php
+//後台對應位置：DateMeNow網站系統/首頁-小Banner
+//改版日期：2022.8.16
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
+    
 require_once("_inc.php");
 require_once("./include/_function.php");
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_dmn.php");
+
+// 程式開始
+if($_SESSION["MM_Username"] == ""){
+    call_alert("請重新登入。","login.php",0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["dmnweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。","login.php",0);
+}
+
+// 圖片上移
+if($_REQUEST["st"] == "mup"){
+    $nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+    $upline = $nowline+1;
+    $SQL = "update webdata set i1=".$nowline." where i1='".$upline."' and types='newindex_banner2'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $SQL = "update webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")." and types='newindex_banner2'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+
+    reURL("dmnweb_fun6.php");
+}
+
+// 圖片下移
+if($_REQUEST["st"] == "mdo"){
+    $nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+    $upline = $nowline-1;
+    $SQL = "update webdata set i1=".$nowline." where i1=".$upline." and types='newindex_banner2'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $SQL = "update webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")." and types='newindex_banner2'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+
+    reURL("dmnweb_fun6.php");
+}
+
+// 刪除圖片(待測試)
+if($_REQUEST["st"] == "del"){
+    $SQL = "select d2 from webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='newindex_banner2'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        DelFile(("datemenow_image/upload/".$result["d2"]));
+        $SQL = "delete from webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='newindex_banner2'";
+        $rs = $DMNConn->prepare($SQL);
+        $rs->execute();
+        if($rs){
+            reURL("dmnweb_fun6.php");
+        }
+    }        
+}
 ?>
 
 <!-- MIDDLE -->
@@ -27,7 +89,7 @@ require_once("./include/_sidebar.php");
             </div>
 
             <div class="panel-body">
-                <p><input type="button" class="btn btn-info" value="新增 Banner" onclick="Mars_popup('dmnweb_fun6_add.phpindex.php','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');"></p>
+                <p><input type="button" class="btn btn-info" value="新增 Banner" onclick="Mars_popup('dmnweb_fun6_add.php','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');"></p>
                 <table class="table table-striped table-bordered bootstrap-datatable">
                     <tbody>
                         <tr>
@@ -37,41 +99,39 @@ require_once("./include/_sidebar.php");
                             <th width="160">資料時間</th>
                             <th>操作</th>
                         </tr>
-
-                        <tr>
-                            <td><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=571&i1=3"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="datemenow_image/upload/newindex_banner2_571.jpg" class="fancybox"><img src="datemenow_image/upload/newindex_banner2_571.jpg" border=0 height=40></a></td>
-                            <td>https://www.datemenow.com.tw/</td>
-                            <td>2021/1/11 上午 11:19:16</td>
-                            <td>
-                                <a href="javascript:Mars_popup('dmnweb_fun6_add.phpindex.php?an=571','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="dmnweb_fun6.phpindex.php?st=del&an=571">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=569&i1=2"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=569&i1=2"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="datemenow_image/upload/newindex_banner2_569.jpg" class="fancybox"><img src="datemenow_image/upload/newindex_banner2_569.jpg" border=0 height=40></a></td>
-                            <td>https://www.datemenow.com.tw/200510/?cc=dmn_officialwebsite_homepage_Banner0713</td>
-                            <td>2021/1/11 上午 11:13:01</td>
-                            <td>
-                                <a href="javascript:Mars_popup('dmnweb_fun6_add.phpindex.php?an=569','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="dmnweb_fun6.phpindex.php?st=del&an=569">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=200&i1=1"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="#nu" onclick="alert('無法向下');"><span class="fa fa-arrow-down"></span></a></td>
-                            <td><a href="datemenow_image/upload/newindex_banner2_200.jpg" class="fancybox"><img src="datemenow_image/upload/newindex_banner2_200.jpg" border=0 height=40></a></td>
-                            <td>landing.phpindex.php</td>
-                            <td>2016/10/13 下午 01:13:58</td>
-                            <td>
-                                <a href="javascript:Mars_popup('dmnweb_fun6_add.phpindex.php?an=200','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
-                                <a title="刪除" href="dmnweb_fun6.phpindex.php?st=del&an=200">刪除</a>
-                            </td>
-                        </tr>
-
-
+                        <?php 
+                            $SQL = "SELECT * FROM webdata where types='newindex_banner2' order by i1 desc";
+                            $rs = $DMNConn->prepare($SQL);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){
+                                $ii = 0;
+                                foreach($result as $re){
+                                    if($ii == 0){
+                                        $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                    }else{
+                                        $uahref = "?st=mup&an=".$re["auton"]."&i1=".$re["i1"];
+                                    }                                   
+                                    if($ii == count($result)-1){
+                                        $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                    }else{
+                                        $dahref = "?st=mdo&an=".$re["auton"]."&i1=".$re["i1"];
+                                    } ?>
+                                    <tr>
+                                        <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>
+                                        <td><a href="datemenow_image/upload/<?php echo $re["d2"] ?>" class="fancybox"><img src="datemenow_image/upload/<?php echo $re["d2"] ?>" border=0 height=40></a></td>
+                                        <td><?php echo $re["d1"]; ?></td>
+                                        <td><?php echo changeDate($re["t1"]); ?></td>
+                                        <td>
+                                            <a href="javascript:Mars_popup('dmnweb_fun6_add.php?an=<?php echo $re["auton"] ?>','','scrollbars=yes,status=yes,menubar=yes,resizable=yes,width=690,height=300,top=10,left=10');">編輯</a>
+                                            <a title="刪除" href="dmnweb_fun6.php?st=del&an=<?php echo $re["auton"] ?>">刪除</a>						
+                                        </td>
+                                    </tr>
+                                <?php $ii = $ii+1; } 
+                            }else{
+                                echo "<tr><td colspan=4>目前無資料</td></tr>";
+                            }
+                        ?>
                     </tbody>
                 </table>
             </div>

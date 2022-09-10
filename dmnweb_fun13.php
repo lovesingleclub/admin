@@ -1,8 +1,87 @@
 <?php
+/*****************************************/
+//檔案名稱：dmnweb_fun13.php
+//後台對應位置：DateMeNow網站系統/選單-交友企劃
+//改版日期：2022.8.22
+//改版設計人員：Jack
+//改版程式人員：Jack
+/*****************************************/
 require_once("_inc.php");
 require_once("./include/_function.php");
 require_once("./include/_top.php");
-require_once("./include/_sidebar.php");
+require_once("./include/_sidebar_dmn.php");
+
+// 程式開始
+if($_SESSION["MM_Username"] == ""){
+    call_alert("請重新登入。","login.php",0);
+}
+
+if($_SESSION["MM_UserAuthorization"] != "admin" && $_SESSION["dmnweb"] != "1"){
+    call_alert("您沒有查看此頁的權限。","login.php",0);
+}
+
+// 文字上移
+if($_REQUEST["st"] == "mup"){
+    $nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+    $upline = $nowline+1;
+    $SQL = "update webdata set i1=".$nowline." where i1='".$upline."' and types='menu_event'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $SQL = "update webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")." and types='menu_event'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+
+    reURL("dmnweb_fun13.php");
+}
+
+// 文字下移
+if($_REQUEST["st"] == "mdo"){
+    $nowline = round(SqlFilter($_REQUEST["i1"],"int"));
+    $upline = $nowline-1;
+    $SQL = "update webdata set i1=".$nowline." where i1=".$upline." and types='menu_event'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $SQL = "update webdata set i1=".$upline." where auton=".SqlFilter($_REQUEST["an"],"int")." and types='menu_event'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+
+    reURL("dmnweb_fun13.php");
+}
+
+// 刪除
+if($_REQUEST["st"] == "del"){
+    $SQL = "select d2 from webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='menu_event'";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        DelFile(("datemenow_image/upload/".$result["d2"]));
+        $SQL = "delete from webdata where auton=".SqlFilter($_REQUEST["an"],"int")." and types='menu_event'";
+        $rs = $DMNConn->prepare($SQL);
+        $rs->execute();
+        if($rs){
+            reURL("dmnweb_fun13.php");
+        }
+    }        
+}
+
+// 新增
+if($_REQUEST["st"] == "add"){
+    $SQL = "SELECT top 1 i1 FROM webdata where types='menu_event' order by i1 desc";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    $result = $rs->fetch(PDO::FETCH_ASSOC);
+    if($result){
+        $i1 = $result["d1"];
+    }else{
+        $i1 = 1;
+    }
+    $SQL = "INSERT INTO webdata (d1,d2,i1,t1,types) VALUES ('".SqlFilter($_REQUEST["d1"],"tab")."','".SqlFilter($_REQUEST["d2"],"tab")."','".$i1."','".date("Y/m/d H:i:s")."','menu_event')";
+    $rs = $DMNConn->prepare($SQL);
+    $rs->execute();
+    reURL("dmnweb_fun13.php");
+}
+
 ?>
 
 <!-- MIDDLE -->
@@ -42,44 +121,39 @@ require_once("./include/_sidebar.php");
                             <th>連結</th>
                             <th>操作</th>
                         </tr>
+                        <?php 
+                            $SQL = "SELECT * FROM webdata where types='menu_event' order by i1 desc";
+                            $rs = $DMNConn->prepare($SQL);
+                            $rs->execute();
+                            $result = $rs->fetchAll(PDO::FETCH_ASSOC);
+                            if($result){ 
+                                $ii = 0;
+                                foreach($result as $re){ 
+                                        if($ii == 0){
+                                            $uahref = "#nu\" onclick=\"alert('無法向上');\"";
+                                        }else{
+                                            $uahref = "?st=mup&an=".$re["auton"]."&i1=".$re["i1"];
+                                        }                                   
+                                        if($ii == count($result)-1){
+                                            $dahref = "#nu\" onclick=\"alert('無法向下');\"";
+                                        }else{
+                                            $dahref = "?st=mdo&an=".$re["auton"]."&i1=".$re["i1"];
+                                        }
+                                    ?>
+                                    <tr>
+                                        <td><a href="<?php echo $uahref; ?>"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="<?php echo $dahref; ?>"><span class="fa fa-arrow-down"></span></a></td>				
+                                        <td><?php echo $re["d1"]; ?></td>
+                                        <td><?php echo $re["d2"]; ?></td>
+                                        <td>
+                                            <a title="刪除" href="?st=del&an=<?php echo $re["auton"]; ?>">刪除</a>						
+                                        </td>
+                                    </tr>
+                                <?php $ii = $ii+1; }
+                            }else{
+                                echo "<tr><td colspan=4>目前無資料</td></tr>";
+                            }
 
-                        <tr>
-                            <td><a href="#nu" onclick="alert('無法向上');"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=568&i1=4"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>自選約會</td>
-                            <td>/landing</td>
-                            <td>
-                                <a title="刪除" href="?st=del&an=568">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=563&i1=3"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=563&i1=3"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>上班族不能不約會</td>
-                            <td>https://www.datemenow.com.tw/event180310.php</td>
-                            <td>
-                                <a title="刪除" href="?st=del&an=563">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=562&i1=2"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="?st=mdo&an=562&i1=2"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>戀愛分析量表</td>
-                            <td>https://www.datemenow.com.tw/180610/</td>
-                            <td>
-                                <a title="刪除" href="?st=del&an=562">刪除</a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td><a href="?st=mup&an=561&i1=1"><span class="fa fa-arrow-up margin-left-10 margin-right-10"></span></a><a href="#nu" onclick="alert('無法向下');"><span class="fa fa-arrow-down"></span></a></td>
-                            <td>大家都在穩定交往的秘訣?</td>
-                            <td>https://www.datemenow.com.tw/200510/</td>
-                            <td>
-                                <a title="刪除" href="?st=del&an=561">刪除</a>
-                            </td>
-                        </tr>
-
-
+                        ?>
                     </tbody>
                 </table>
             </div>

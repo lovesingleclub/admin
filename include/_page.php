@@ -34,25 +34,22 @@
 <?php }?>
 <form name="frmpage" id="frmpage" method="post">
 	<input type="hidden" name="tPage" id="tPage" value="<?php echo $tPage;?>">
-	<input type="hidden" name="keyword_type" id="keyword_type" value="<?php echo $keyword_type;?>">
 	<input type="hidden" name="keyword" id="keyword" value="<?php echo $keyword;?>">
+	<input type="hidden" name="keyword_type" id="keyword_type" value="<?php echo $keyword_type;?>">
 	<input type="hidden" name="branch" id="branch" value="<?php echo $branch;?>">
 	<input type="hidden" name="single" id="single" value="<?php echo $single;?>">
 	<input type="hidden" name="timeend" id="timeend" value="<?php echo $timeend;?>">
 	<input type="hidden" name="daysel" id="daysel" value="<?php echo $daysel;?>">
 	<input type="hidden" name="oby" id="oby" value="<?php echo $oby;?>">
 	<input type="hidden" name="tr" id="tr" value="<?php echo $tr;?>">
-	<input type="hidden" name="lovesize1" id="lovesize1" value="<?php echo $lovesize1;?>">
-	<input type="hidden" name="lovesize2" id="lovesize2" value="<?php echo $lovesize2;?>">
-	<input type="hidden" name="lovedate1" id="lovedate1" value="<?php echo $lovedate1;?>">
-	<input type="hidden" name="lovedate2" id="lovedate2" value="<?php echo $lovedate2;?>">
-	<input type="hidden" name="joindate1" id="joindate1" value="<?php echo $joindate1;?>">
-	<input type="hidden" name="joindate2" id="joindate2" value="<?php echo $joindate2;?>">
-	<input type="hidden" name="sex" id="sex" value="<?php echo $sex;?>">
-	<input type="hidden" name="times1" id="times1" value="<?php echo $times1;?>">
-	<input type="hidden" name="times2" id="times2" value="<?php echo $times2;?>">
-	<input type="hidden" name="s99" id="s99" value="<?php echo $s99;?>">
+	<input type="hidden" name="a1" id="a1" value="<?php echo $a1;?>">
+	<input type="hidden" name="b1" id="b1" value="<?php echo $b1;?>">
+	<input type="hidden" name="a1" id="a1" value="<?php echo $a1;?>">
+	<input type="hidden" name="s8" id="s8" value="<?php echo $s8;?>">
+	<input type="hidden" name="s9" id="s9" value="<?php echo $s9;?>">
+	<input type="hidden" name="s3" id="s3" value="<?php echo $s3;?>">
+	<input type="hidden" name="s2" id="s2" value="<?php echo $s2;?>">
+	<input type="hidden" name="s95" id="s95" value="<?php echo $s95;?>">
 	<input type="hidden" name="vst" id="vst" value="<?php echo $vst;?>">
-	<input type="hidden" name="search_sex" id="search_sex" value="<?php echo $search_sex;?>">
-	<input type="hidden" name="types" id="types" value="<?php echo $types;?>">
+	<input type="hidden" name="stt" id="stt" value="<?php echo $stt;?>">
 </form>
